@@ -1,6 +1,6 @@
 "use client"
 
-import Contacto from "@/components/Contacto"
+import Contact from "@/components/Contact"
 import Mensaje from "@/components/Mensaje"
 
 export default function TestPage() {

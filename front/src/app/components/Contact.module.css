@@ -1,0 +1,62 @@
+.contact {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+    cursor: pointer;
+  }
+  
+  .fotoPerfil {
+    position: relative;
+  }
+  
+  .imagen {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    object-fit: cover;
+  }
+  
+  .indicador {
+    position: absolute;
+    bottom: 5px;
+    right: 5px;
+    width: 15px;
+    height: 15px;
+    border-radius: 50%;
+    border: 2px solid white;
+  }
+  
+  .online {
+    background-color: green;
+  }
+  
+  .offline {
+    background-color: gray;
+  }
+  
+  .info {
+    margin-left: 15px;
+  }
+  
+  .nombre {
+    font-weight: bold;
+    font-size: 18px;
+    margin: 0;
+  }
+  
+  .status {
+    font-size: 14px;
+    color: gray;
+    margin: 0;
+  }
+  
+  .textoOnline {
+    font-size: 14px;
+    color: green;
+  }
+  
+  .textoOffline {
+    font-size: 14px;
+    color: gray;
+  }

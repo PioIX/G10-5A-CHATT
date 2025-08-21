@@ -1,0 +1,36 @@
+.mensaje {
+    max-width: 60%;
+    padding: 10px;
+    border-radius: 10px;
+    margin: 5px;
+    display: inline-block;
+    position: relative;
+  }
+  
+  /* Mensajes enviados (tuyos) */
+  .enviado {
+    background-color: #dcf8c6; /* verde clarito WhatsApp */
+    margin-left: auto;
+    text-align: right;
+  }
+  
+  /* Mensajes recibidos */
+  .recibido {
+    background-color: #fff;
+    margin-right: auto;
+    border: 1px solid #ddd;
+    text-align: left;
+  }
+  
+  .texto {
+    margin: 0;
+    font-size: 15px;
+    word-wrap: break-word;
+  }
+  
+  .hora {
+    font-size: 11px;
+    color: gray;
+    display: block;
+    margin-top: 5px;
+  }

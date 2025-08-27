@@ -22,18 +22,18 @@ app.get('/', function(req, res){
     });
 });
 
-//get palabras
-app.get('/Palabras', async function(req, res){
+//get usuarios
+app.get('/Usuarios', async function(req, res){
    try {
      let respuesta;
-     if (req.query.palabra != undefined) {
-         respuesta = await realizarQuery(`SELECT * FROM Palabras WHERE palabra='${req.query.palabra}'`)
+     if (req.query.numero_telefono != undefined) {
+         respuesta = await realizarQuery(`SELECT * FROM Usuarios WHERE numero_telefono=${req.query.numero_telefono}`)
      } else {
-         respuesta = await realizarQuery("SELECT * FROM Palabras");
+         respuesta = await realizarQuery("SELECT * FROM Usuarios");
      }
      res.status(200).send({
-         message: 'Aca estan las palabras',
-         palabras: respuesta
+         message: 'Aca estan los usuarios',
+         usuarios: respuesta
     });
    } catch (e) {
         console.log(e);
@@ -43,11 +43,145 @@ app.get('/Palabras', async function(req, res){
 });
 
 
-//get palabras aleatorias
-app.get('/PalabraAleatoria', async function(req, res){
+//get chats
+app.get('/Chats', async function(req, res){
    try {
      let respuesta;
-     if (req.query.palabra != undefined) {
+     if (req.query.id_chat != undefined) {
+         respuesta = await realizarQuery(`SELECT * FROM Chats WHERE id_chat=${req.query.id_chat}`)
+     } else {
+         respuesta = await realizarQuery("SELECT * FROM Chats");
+     }
+     res.status(200).send({
+         message: 'Aca estan los chats',
+         chats: respuesta
+    });
+   } catch (e) {
+        console.log(e);
+        res.send("Hubo un error, " + e)
+        
+   }
+});
+
+
+
+//get mensajes
+app.get('/Mensajes', async function(req, res){
+   try {
+     let respuesta;
+     if (req.query.id_mensaje != undefined) {
+         respuesta = await realizarQuery(`SELECT * FROM Mensajes WHERE id_mensaje=${req.query.id_mensaje}`)
+     } else {
+         respuesta = await realizarQuery("SELECT * FROM Mensajes");
+     }
+     res.status(200).send({
+         message: 'Aca estan los mensajes',
+         mensajes: respuesta
+    });
+   } catch (e) {
+        console.log(e);
+        res.send("Hubo un error, " + e)
+        
+   }
+});
+
+
+//get user_chat
+app.get('/User_chat', async function(req, res){
+   try {
+     let respuesta;
+     if (req.query.id_userchat != undefined) {
+         respuesta = await realizarQuery(`SELECT * FROM User_chat WHERE id_userchat=${req.query.id_userchat}`)
+     } else {
+         respuesta = await realizarQuery("SELECT * FROM User_chat");
+     }
+     res.status(200).send({
+         message: 'Aca estan los userChat',
+         user_chat: respuesta
+    });
+   } catch (e) {
+        console.log(e);
+        res.send("Hubo un error, " + e)
+        
+   }
+});
+
+//delete usuarios
+app.delete('/BorrarUsuarios', async function (req, res) {
+    let numero_telefono = req.body.numero_telefono;
+
+    if (!numero_telefono) {
+        return res.send({ res: "Falta ingresar un numero de telefono", borrada: false });
+    }
+
+    try {
+        let respuesta = await realizarQuery(`SELECT * FROM Usuarios WHERE numero_telefono="${req.body.numero_telefono}"`);
+
+        if (respuesta.length > 0) {
+            await realizarQuery(`DELETE FROM Usuarios WHERE numero_telefono="${req.body.numero_telefono}"`);
+            res.send({ res: "Usuario eliminado", borrada: true });
+        } else {
+            res.send({ res: "El usuario no existe", borrada: false });
+        }
+    } catch (error) {
+        console.error("Error al borrar usuario:", error);
+        res.status(500).send({ res: "Error interno", borrada: false });
+    }
+});
+
+//delete chats
+app.delete('/BorrarChat', async function (req, res) {
+    let id_chat = req.body.id_chat;
+
+    if (!id_chat) {
+        return res.send({ res: "Falta ingresar un id de chat", borrada: false });
+    }
+
+    try {
+        let respuesta = await realizarQuery(`SELECT * FROM Chats WHERE id_chat="${req.body.id_chat}"`);
+
+        if (respuesta.length > 0) {
+            await realizarQuery(`DELETE FROM Chats WHERE id_chat="${req.body.id_chat}"`);
+            res.send({ res: "Chat eliminado", borrada: true });
+        } else {
+            res.send({ res: "El chat no existe", borrada: false });
+        }
+    } catch (error) {
+        console.error("Error al borrar chat:", error);
+        res.status(500).send({ res: "Error interno", borrada: false });
+    }
+});
+
+//delete mensaje
+app.delete('/BorrarMensaje', async function (req, res) {
+    let id_mensaje = req.body.id_mensaje;
+
+    if (!id_mensaje) {
+        return res.send({ res: "Falta ingresar un id de mensaje", borrada: false });
+    }
+
+    try {
+        let respuesta = await realizarQuery(`SELECT * FROM Mensajes WHERE id_mensaje="${req.body.id_mensaje}"`);
+
+        if (respuesta.length > 0) {
+            await realizarQuery(`DELETE FROM Mensajes WHERE id_mensajes="${req.body.id_mensaje}"`);
+            res.send({ res: "Mensajes eliminado", borrada: true });
+        } else {
+            res.send({ res: "El mensaje no existe", borrada: false });
+        }
+    } catch (error) {
+        console.error("Error al borrar mensaje:", error);
+        res.status(500).send({ res: "Error interno", borrada: false });
+    }
+});
+
+
+
+//get palabras aleatorias
+app.get('/PalabrasAleatorias', async function(req, res){
+   try {
+     let respuesta;
+     if (req.query.id_chat != undefined) {
          respuesta =  await realizarQuery(`SELECT palabra FROM Palabras ORDER BY RAND() LIMIT 1`);
      } else {
          respuesta = await realizarQuery(`SELECT palabra FROM Palabras ORDER BY RAND() LIMIT 1`);

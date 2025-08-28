@@ -175,6 +175,64 @@ app.delete('/BorrarMensaje', async function (req, res) {
     }
 });
 
+//registro numeros
+app.post('/RegistroUsuarios', async function(req,res) {
+    console.log("/registro req.body:"+req.body) 
+    let respuesta;
+    if (req.body.numero_telefono != undefined) {
+        respuesta = await realizarQuery(`SELECT * FROM Usuarios WHERE numero_telefono=${req.body.numero_telefono}`)
+        console.log(respuesta)
+        if (respuesta.length != 0) {
+            res.send({res: "Ese numero de telefono ya existe", registro:false})}
+        else{
+           await realizarQuery(`
+            INSERT INTO Usuarios (numero_telefono,contraseña,nombre,mail) VALUES
+            (${req.body.numero_telefono},'${req.body.contraseña}','${req.body.nombre}','${req.body.mail}')`)
+        res.send({res: "Usuario agregado", registro: true})
+    }
+    } else {
+        res.send({res: "Falta numero de telefono", registro:false})
+
+    }    
+
+})
+
+//login numeros
+app.post('/LoginUsuarios', async function(req,res) {
+    console.log(req.body) 
+    let respuesta;
+    if (req.body.numero_telefono != undefined) {
+        respuesta = await realizarQuery(`SELECT * FROM Usuarios WHERE numero_telefono=${req.body.numero_telefono}`)
+        console.log(respuesta)
+        if (respuesta.length > 0) {
+            if (req.body.contraseña != undefined) {
+                respuesta = await realizarQuery(`SELECT * FROM Usuarios WHERE numero_telefono=${req.body.numero_telefono} && contraseña="${req.body.contraseña}"`)
+                if  (respuesta.length > 0) {
+                    console.log(respuesta)
+                    res.send({
+                        res: "Usuario existe",
+                        loguea: true,
+                        //admin: Boolean(respuesta[0].administrador)
+})
+                }
+                else{
+                    res.send({res:"Contraseña incorrecta",loguea:false}) 
+                }
+            }else{
+                res.send({res:"Falta ingresar contraseña",loguea:false})                
+            }
+        } 
+        else{
+            res.send({res:"Esta mal el numero de telefono",loguea:false})
+        }
+    
+    }else {
+        res.send({res:"Falta numero de telefono",loguea:false})
+
+    }    
+
+})
+
 
 
 //get palabras aleatorias

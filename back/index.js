@@ -26,8 +26,8 @@ app.get('/', function(req, res){
 app.get('/Usuarios', async function(req, res){
    try {
      let respuesta;
-     if (req.query.numero_telefono != undefined) {
-         respuesta = await realizarQuery(`SELECT * FROM Usuarios WHERE numero_telefono=${req.query.numero_telefono}`)
+     if (req.query.id_usuario != undefined) {
+         respuesta = await realizarQuery(`SELECT * FROM Usuarios WHERE id_usuario=${req.query.id_usuario}`)
      } else {
          respuesta = await realizarQuery("SELECT * FROM Usuarios");
      }
@@ -108,17 +108,17 @@ app.get('/User_chat', async function(req, res){
 
 //delete usuarios
 app.delete('/BorrarUsuarios', async function (req, res) {
-    let numero_telefono = req.body.numero_telefono;
+    let id_usuario = req.body.id_usuario;
 
-    if (!numero_telefono) {
+    if (!id_usuario) {
         return res.send({ res: "Falta ingresar un numero de telefono", borrada: false });
     }
 
     try {
-        let respuesta = await realizarQuery(`SELECT * FROM Usuarios WHERE numero_telefono="${req.body.numero_telefono}"`);
+        let respuesta = await realizarQuery(`SELECT * FROM Usuarios WHERE id_usuario="${req.body.id_usuario}"`);
 
         if (respuesta.length > 0) {
-            await realizarQuery(`DELETE FROM Usuarios WHERE numero_telefono="${req.body.numero_telefono}"`);
+            await realizarQuery(`DELETE FROM Usuarios WHERE id_usuario="${req.body.id_usuario}"`);
             res.send({ res: "Usuario eliminado", borrada: true });
         } else {
             res.send({ res: "El usuario no existe", borrada: false });
@@ -179,15 +179,15 @@ app.delete('/BorrarMensaje', async function (req, res) {
 app.post('/RegistroUsuarios', async function(req,res) {
     console.log("/registro req.body:"+req.body) 
     let respuesta;
-    if (req.body.numero_telefono != undefined) {
-        respuesta = await realizarQuery(`SELECT * FROM Usuarios WHERE numero_telefono=${req.body.numero_telefono}`)
+    if (req.body.id_usuario != undefined) {
+        respuesta = await realizarQuery(`SELECT * FROM Usuarios WHERE id_usuario=${req.body.id_usuario}`)
         console.log(respuesta)
         if (respuesta.length != 0) {
             res.send({res: "Ese numero de telefono ya existe", registro:false})}
         else{
            await realizarQuery(`
-            INSERT INTO Usuarios (numero_telefono,contraseña,nombre,mail) VALUES
-            (${req.body.numero_telefono},'${req.body.contraseña}','${req.body.nombre}','${req.body.mail}')`)
+            INSERT INTO Usuarios (id_usuario,contraseña,nombre,mail) VALUES
+            (${req.body.id_usuario},'${req.body.contraseña}','${req.body.nombre}','${req.body.mail}')`)
         res.send({res: "Usuario agregado", registro: true})
     }
     } else {
@@ -201,12 +201,12 @@ app.post('/RegistroUsuarios', async function(req,res) {
 app.post('/LoginUsuarios', async function(req,res) {
     console.log(req.body) 
     let respuesta;
-    if (req.body.numero_telefono != undefined) {
-        respuesta = await realizarQuery(`SELECT * FROM Usuarios WHERE numero_telefono=${req.body.numero_telefono}`)
+    if (req.body.id_usuario != undefined) {
+        respuesta = await realizarQuery(`SELECT * FROM Usuarios WHERE id_usuario=${req.body.id_usuario}`)
         console.log(respuesta)
         if (respuesta.length > 0) {
             if (req.body.contraseña != undefined) {
-                respuesta = await realizarQuery(`SELECT * FROM Usuarios WHERE numero_telefono=${req.body.numero_telefono} && contraseña="${req.body.contraseña}"`)
+                respuesta = await realizarQuery(`SELECT * FROM Usuarios WHERE id_usuario=${req.body.id_usuario} && contraseña="${req.body.contraseña}"`)
                 if  (respuesta.length > 0) {
                     console.log(respuesta)
                     res.send({

@@ -8,8 +8,8 @@ import Button from "@/components/Button";
 import Contact from "@/components/Contact";
 import styles from "./page.module.css";
 
-export default function registroYlogin() {
-  const [modo, setModo] = useState("login"); 
+export default function RegistroYLogin() {
+  const [modo, setModo] = useState("login");
   const [nombre, setNombre] = useState("");
   const [numeroTelefono, setNumeroTelefono] = useState("");
   const [password, setPassword] = useState("");
@@ -27,8 +27,8 @@ export default function registroYlogin() {
 
   async function ingresar() {
     const datosLogin = {
-     numero_telefono: numeroTelefono, 
-     password:password
+      numero_telefono: numeroTelefono,
+      password: password,
     };
 
     try {
@@ -77,7 +77,7 @@ export default function registroYlogin() {
 
       if (result.res === true) {
         showModal("Éxito", "¡Usuario registrado correctamente!");
-        setTimeout(() => setModo("login"), 1000); 
+        setTimeout(() => setModo("login"), 1000);
       } else {
         showModal("Error", result.message || "No se pudo registrar el usuario");
       }
@@ -91,62 +91,84 @@ export default function registroYlogin() {
     <div className={styles.container}>
       {modo === "login" ? (
         <>
-          <h1>Iniciar sesión</h1>
+          <h1 className={styles.titulo}>Iniciar sesión</h1>
           <Input
+            className={styles.input}
             type="text"
             placeholder="Teléfono"
             value={numeroTelefono}
             onChange={(e) => setNumeroTelefono(e.target.value)}
           />
           <Input
+            className={styles.input}
             type="password"
             placeholder="Contraseña"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />
-          <Button onClick={ingresar}>Ingresar</Button>
-          <p>
+          <Button className={styles.botonAccion} onClick={ingresar}>
+            Ingresar
+          </Button>
+          <p className={styles.textoCambioModo}>
             ¿No tenés cuenta?{" "}
-            <button onClick={() => setModo("registro")}>Registrate</button>
+          <button
+          className={styles.botonCambioModo}
+          onClick={() => setModo("registro")}
+           >
+            Registrate
+          </button>
           </p>
+
         </>
       ) : (
         <>
-          <h1>Registrarse</h1>
+          <h1 className={styles.titulo}>Registrarse</h1>
           <Input
+            className={styles.input}
             type="text"
             placeholder="Nombre"
             value={nombre}
             onChange={(e) => setNombre(e.target.value)}
           />
           <Input
+            className={styles.input}
             type="text"
             placeholder="Teléfono"
             value={numeroTelefono}
             onChange={(e) => setNumeroTelefono(e.target.value)}
           />
           <Input
+            className={styles.input}
             type="password"
             placeholder="Contraseña"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />
           <Input
+            className={styles.input}
             type="password"
             placeholder="Confirmar contraseña"
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
           />
-          <Button onClick={registrar}>Registrarse</Button>
-          <p>
+          <Button className={styles.btn} onClick={registrar}>
+            Registrarse
+          </Button>
+          <p className={styles.texto}>
             ¿Ya tenés cuenta?{" "}
-            <button onClick={() => setModo("login")}>Inicia sesión</button>
+            <button
+              className={styles.linkBoton}
+              onClick={() => setModo("login")}
+            >
+              Inicia sesión
+            </button>
           </p>
         </>
       )}
 
       {modal.open && (
         <Mensaje
+          className={styles.mensaje}
           title={modal.title}
           message={modal.message}
           onClose={closeModal}

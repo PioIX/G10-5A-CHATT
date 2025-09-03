@@ -3,8 +3,6 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Mensaje from "@/components/Mensaje";
-import Input from "@/components/Input";
-import Button from "@/components/Button";
 import Contact from "@/components/Contact";
 import styles from "./page.module.css";
 
@@ -32,7 +30,7 @@ export default function RegistroYLogin() {
     };
 
     try {
-      const response = await fetch("http://localhost:4001/LoginUsuarios", {
+      const response = await fetch("http://localhost:3000/LoginUsuarios", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(datosLogin),
@@ -66,7 +64,7 @@ export default function RegistroYLogin() {
     };
 
     try {
-      const response = await fetch("http://localhost:4001/RegistroUsuarios", {
+      const response = await fetch("http://localhost:3000/RegistroUsuarios", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(datosRegistro),
@@ -89,82 +87,83 @@ export default function RegistroYLogin() {
 
   return (
     <div className={styles.container}>
-      {modo === "login" ? (
-        <>
-          <h1 className={styles.titulo}>Iniciar sesión</h1>
-          <Input
-            className={styles.input}
-            type="text"
-            placeholder="Teléfono"
-            value={numeroTelefono}
-            onChange={(e) => setNumeroTelefono(e.target.value)}
-          />
-          <Input
-            className={styles.input}
-            type="password"
-            placeholder="Contraseña"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-          <Button className={styles.botonAccion} onClick={ingresar}>
-            Ingresar
-          </Button>
-          <p className={styles.textoCambioModo}>
-            ¿No tenés cuenta?{" "}
-          <button
-          className={styles.botonCambioModo}
-          onClick={() => setModo("registro")}
-           >
-            Registrate
-          </button>
-          </p>
-
-        </>
-      ) : (
-        <>
-          <h1 className={styles.titulo}>Registrarse</h1>
-          <Input
-            className={styles.input}
-            type="text"
-            placeholder="Nombre"
-            value={nombre}
-            onChange={(e) => setNombre(e.target.value)}
-          />
-          <Input
-            className={styles.input}
-            type="text"
-            placeholder="Teléfono"
-            value={numeroTelefono}
-            onChange={(e) => setNumeroTelefono(e.target.value)}
-          />
-          <Input
-            className={styles.input}
-            type="password"
-            placeholder="Contraseña"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-          <Input
-            className={styles.input}
-            type="password"
-            placeholder="Confirmar contraseña"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-          />
-          <Button className={styles.btn} onClick={registrar}>
-            Registrarse
-          </Button>
-          <p className={styles.texto}>
-            ¿Ya tenés cuenta?{" "}
-            <button
-              className={styles.linkBoton}
-              onClick={() => setModo("login")}
-            >
-              Inicia sesión
+      <div className={styles.formContainer}>
+        {modo === "login" ? (
+          <>
+            <h1 className={styles.titulo}>Iniciar sesión</h1>
+            <input
+              className={styles.input}
+              type="text"
+              placeholder="Teléfono"
+              value={numeroTelefono}
+              onChange={(e) => setNumeroTelefono(e.target.value)}
+            />
+            <input
+              className={styles.input}
+              type="password"
+              placeholder="Contraseña"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+            <button className={styles.botonAccion} onClick={ingresar}>
+              Ingresar
             </button>
-          </p>
-        </>
-      )}
+            <p className={styles.textoCambioModo}>
+              ¿No tenés cuenta?{" "}
+              <button
+                className={styles.botonCambioModo}
+                onClick={() => setModo("registro")}
+              >
+                Registrate
+              </button>
+            </p>
+          </>
+        ) : (
+          <>
+            <h1 className={styles.titulo}>Registrarse</h1>
+            <input
+              className={styles.input}
+              type="text"
+              placeholder="Nombre"
+              value={nombre}
+              onChange={(e) => setNombre(e.target.value)}
+            />
+            <input
+              className={styles.input}
+              type="text"
+              placeholder="Teléfono"
+              value={numeroTelefono}
+              onChange={(e) => setNumeroTelefono(e.target.value)}
+            />
+            <input
+              className={styles.input}
+              type="password"
+              placeholder="Contraseña"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+            <input
+              className={styles.input}
+              type="password"
+              placeholder="Confirmar contraseña"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+            />
+            <button className={styles.botonAccion} onClick={registrar}>
+              Registrarse
+            </button>
+            <p className={styles.textoCambioModo}>
+              ¿Ya tenés cuenta?{" "}
+              <button
+                className={styles.botonCambioModo}
+                onClick={() => setModo("login")}
+              >
+                Inicia sesión
+              </button>
+            </p>
+          </>
+        )}
+      </div>
 
       {modal.open && (
         <Mensaje

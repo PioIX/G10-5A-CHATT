@@ -10,102 +10,6 @@
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
-/* Estilos para los títulos h1 */
-.container h1 {
-  font-size: 2.5rem;
-  font-weight: 700;
-  color: white;
-  margin-bottom: 2rem;
-  text-align: center;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  letter-spacing: -0.025em;
-}
-
-
-
-/* Estilos para los inputs (asumiendo que Input es un componente personalizado) */
-.container input {
-  width: 50%;
-  padding: 1rem 1.5rem;
-  margin-bottom: 1.5rem;
-  border: 2px solid #e2e8f0;
-  border-radius: 12px;
-  font-size: 1rem;
-  text-align: center;
-  transition: all 0.3s ease;
-  background: #f8fafc;
-  color: #2d3748;
-}
-
-.container input:focus {
-  outline: none;
-  border-color: #667eea;
-  background: white;
-  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-  transform: translateY(-1px);
-}
-
-.container input::placeholder {
-  color: #a0aec0;
-  font-weight: 400;
-}
-
-
-
-
-
-
-
-@keyframes slideIn {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* Responsividad */
-@media (max-width: 480px) {
-  .container {
-    padding: 1rem 0.5rem;
-  }
-  
-  .formContainer {
-    padding: 2rem 1.5rem;
-    margin: 1rem;
-  }
-  
-  .container h1 {
-    font-size: 2rem;
-    margin-bottom: 1.5rem;
-  }
-  
-  .container input {
-    padding: 0.875rem 1.25rem;
-    margin-bottom: 1.25rem;
-  }
-  
-  .primaryButton {
-    padding: 0.875rem 1.5rem;
-    font-size: 1rem;
-  }
-}
-
-/* Efectos adicionales para mejor UX */
-.container input:invalid {
-  border-color: #fed7d7;
-  background: #fef5e7;
-}
-
-.container input:valid {
-  border-color: #c6f6d5;
-}
-
-
-
 /* Contenedor del formulario específico */
 .formContainer {
   background: rgba(255, 255, 255, 0.95);
@@ -125,111 +29,72 @@
   box-shadow: 0 35px 70px rgba(0, 0, 0, 0.2);
 }
 
-/* Grupo de inputs */
-.inputGroup {
-  margin-bottom: 1rem;
-}
-
-/* Botón principal específico */
-.primaryButton {
-  width: 100%;
-  padding: 1rem 2rem;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  border: none;
-  border-radius: 12px;
-  font-size: 1.1rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  margin-bottom: 1.5rem;
-  text-transform: none;
-  letter-spacing: 0.025em;
-}
-
-.primaryButton:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
-  background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
-}
-
-.primaryButton:active:not(:disabled) {
-  transform: translateY(0);
-  box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
-}
-
-.primaryButton:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-  transform: none !important;
-}
-
-/* Texto de cambio de modo */
-.switchText {
+/* Estilos para los títulos h1 */
+.titulo {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #2d3748;
+  margin-bottom: 2rem;
   text-align: center;
-  color: #4a5568;
-  font-size: 0.95rem;
-  margin: 0;
-  line-height: 1.6;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  letter-spacing: -0.025em;
 }
 
-/* Botón de enlace para cambiar modo */
-.linkButton {
-  background: none;
-  border: none;
-  color: #667eea;
-  font-weight: 600;
-  cursor: pointer;
-  text-decoration: underline;
-  transition: all 0.2s ease;
-  font-size: inherit;
-  padding: 0;
-  margin-left: 0.25rem;
-}
-
-.linkButton:hover:not(:disabled) {
-  color: #5a67d8;
-  text-shadow: 0 1px 3px rgba(102, 126, 234, 0.3);
-}
-
-.linkButton:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-
-/* Estilos para el componente Contact */
-.container > div:last-child {
-  background: transparent;
-  box-shadow: none;
-  backdrop-filter: none;
-  border: none;
-  padding: 1rem;
-  margin-top: 2rem;
-}
-/* Botón personalizado para login y registro */
-.botonAccion {
-  width: 100%;
-  padding: 1rem 2rem;
-  background: linear-gradient(135deg, #00c6ff 0%, #0072ff 100%);
-  color: #ffffff;
-  border: none;
-  border-radius: 14px;
-  font-size: 1.1rem;
-  font-weight: bold;
-  cursor: pointer;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+/* Estilos para los inputs */
+.input {
+  width: 100% !important;
+  padding: 1rem 1.5rem;
   margin-bottom: 1.5rem;
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
+  font-size: 1rem;
+  text-align: center;
+  transition: all 0.3s ease;
+  background: #f8fafc;
+  color: #2d3748;
+  box-sizing: border-box;
+}
+
+.input:focus {
+  outline: none;
+  border-color: #667eea;
+  background: white;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  transform: translateY(-1px);
+}
+
+.input::placeholder {
+  color: #a0aec0;
+  font-weight: 400;
+}
+
+/* Botón principal de acción (Ingresar/Registrarse) */
+.botonAccion {
+  width: 100% !important;
+  padding: 1rem 2rem !important;
+  background: linear-gradient(135deg, #42b36d 0%, #2a8541 100%) !important;
+  color: #ffffff !important;
+  border: none !important;
+  border-radius: 14px !important;
+  font-size: 1.1rem !important;
+  font-weight: bold !important;
+  cursor: pointer !important;
+  transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+  margin-bottom: 1.5rem !important;
+  display: block !important;
+  text-align: center !important;
+  text-decoration: none !important;
+  box-sizing: border-box;
 }
 
 .botonAccion:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(0, 114, 255, 0.4);
+  transform: translateY(-2px) !important;
+  box-shadow: 0 8px 20px rgba(0, 114, 255, 0.4) !important;
 }
 
 .botonAccion:active {
-  transform: translateY(0);
-  box-shadow: 0 4px 12px rgba(0, 114, 255, 0.3);
+  transform: translateY(0) !important;
+  box-shadow: 0 4px 12px rgba(0, 114, 255, 0.3) !important;
 }
 
 /* Texto debajo del botón */
@@ -238,6 +103,7 @@
   font-size: 0.95rem;
   color: #2d3748;
   margin-top: 0.5rem;
+  margin-bottom: 0;
 }
 
 /* Botón de cambio de modo */
@@ -250,20 +116,82 @@
   text-decoration: underline;
   margin-left: 0.3rem;
   font-size: 0.95rem;
+  padding: 0;
 }
 
 .botonCambioModo:hover {
-  color: #005ecb;
+  color: #2e167f;
   text-shadow: 0 1px 3px rgba(0, 114, 255, 0.3);
 }
 
+/* Animación de entrada */
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 /* Mejoras para accesibilidad */
-.container button:focus-visible {
+.botonAccion:focus-visible,
+.botonCambioModo:focus-visible {
   outline: 3px solid rgba(102, 126, 234, 0.5);
   outline-offset: 2px;
 }
 
-.container input:focus-visible {
+.input:focus-visible {
   outline: 3px solid rgba(102, 126, 234, 0.5);
   outline-offset: 2px;
+}
+
+/* Estilos para el componente Contact */
+.container > div:last-child {
+  background: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
+  border: none;
+  padding: 1rem;
+  margin-top: 2rem;
+}
+
+/* Efectos adicionales para mejor UX */
+.input:invalid {
+  border-color: #fed7d7;
+  background: #fef5e7;
+}
+
+.input:valid {
+  border-color: #c6f6d5;
+}
+
+/* Responsividad */
+@media (max-width: 480px) {
+  .container {
+    padding: 1rem 0.5rem;
+  }
+  
+  .formContainer {
+    padding: 2rem 1.5rem;
+    margin: 1rem;
+    max-width: calc(100vw - 2rem);
+  }
+  
+  .titulo {
+    font-size: 2rem;
+    margin-bottom: 1.5rem;
+  }
+  
+  .input {
+    padding: 0.875rem 1.25rem;
+    margin-bottom: 1.25rem;
+  }
+  
+  .botonAccion {
+    padding: 0.875rem 1.5rem !important;
+    font-size: 1rem !important;
+  }
 }

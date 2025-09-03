@@ -7,7 +7,7 @@ var cors = require('cors');
 const { realizarQuery } = require('./modulos/mysql');
 
 var app = express(); //Inicializo express
-var port = process.env.PORT || 4000; //Ejecuto el servidor en el puerto 3000
+var port = process.env.PORT || 4001; //Ejecuto el servidor en el puerto 3000
 
 // Convierte una petición recibida (POST-GET...) a objeto JSON
 app.use(bodyParser.urlencoded({extended:false}));
@@ -26,18 +26,18 @@ app.get('/', function(req, res){
 app.get('/Usuarios', async function(req, res){
    try {
      let respuesta;
-     if (req.query.id_usuario != undefined) {
-         respuesta = await realizarQuery(`SELECT * FROM Usuarios WHERE id_usuario=${req.query.id_usuario}`)
+     if (req.query.numero_telefono != undefined) {
+         respuesta = await realizarQuery(`SELECT * FROM Usuarios WHERE numero_telefono="${req.query.numero_telefono}"`)
      } else {
          respuesta = await realizarQuery("SELECT * FROM Usuarios");
      }
-     res.status(200).send({
+     res.status(200).json({
          message: 'Aca estan los usuarios',
          usuarios: respuesta
     });
    } catch (e) {
         console.log(e);
-        res.send("Hubo un error, " + e)
+        res.json("Hubo un error, " + e)
         
    }
 });
@@ -108,24 +108,24 @@ app.get('/User_chat', async function(req, res){
 
 //delete usuarios
 app.delete('/BorrarUsuarios', async function (req, res) {
-    let id_usuario = req.body.id_usuario;
+    let numero_telefono = req.body.numero_telefono;
 
-    if (!id_usuario) {
-        return res.send({ res: "Falta ingresar un numero de telefono", borrada: false });
+    if (!numero_telefono) {
+        return res.json({ res: "Falta ingresar un numero de telefono", borrada: false });
     }
 
     try {
-        let respuesta = await realizarQuery(`SELECT * FROM Usuarios WHERE id_usuario="${req.body.id_usuario}"`);
+        let respuesta = await realizarQuery(`SELECT * FROM Usuarios WHERE numero_telefono="${req.body.numero_telefono}"`);
 
         if (respuesta.length > 0) {
-            await realizarQuery(`DELETE FROM Usuarios WHERE id_usuario="${req.body.id_usuario}"`);
-            res.send({ res: "Usuario eliminado", borrada: true });
+            await realizarQuery(`DELETE FROM Usuarios WHERE numero_telefono="${req.body.numero_telefono}"`);
+            res.json({ res: "Usuario eliminado", borrada: true });
         } else {
-            res.send({ res: "El usuario no existe", borrada: false });
+            res.json({ res: "El usuario no existe", borrada: false });
         }
     } catch (error) {
         console.error("Error al borrar usuario:", error);
-        res.status(500).send({ res: "Error interno", borrada: false });
+        res.status(500).json({ res: "Error interno", borrada: false });
     }
 });
 
@@ -134,7 +134,7 @@ app.delete('/BorrarChat', async function (req, res) {
     let id_chat = req.body.id_chat;
 
     if (!id_chat) {
-        return res.send({ res: "Falta ingresar un id de chat", borrada: false });
+        return res.json({ res: "Falta ingresar un id de chat", borrada: false });
     }
 
     try {
@@ -142,13 +142,13 @@ app.delete('/BorrarChat', async function (req, res) {
 
         if (respuesta.length > 0) {
             await realizarQuery(`DELETE FROM Chats WHERE id_chat="${req.body.id_chat}"`);
-            res.send({ res: "Chat eliminado", borrada: true });
+            res.json({ res: "Chat eliminado", borrada: true });
         } else {
-            res.send({ res: "El chat no existe", borrada: false });
+            res.json({ res: "El chat no existe", borrada: false });
         }
     } catch (error) {
         console.error("Error al borrar chat:", error);
-        res.status(500).send({ res: "Error interno", borrada: false });
+        res.status(500).json({ res: "Error interno", borrada: false });
     }
 });
 
@@ -157,21 +157,21 @@ app.delete('/BorrarMensaje', async function (req, res) {
     let id_mensaje = req.body.id_mensaje;
 
     if (!id_mensaje) {
-        return res.send({ res: "Falta ingresar un id de mensaje", borrada: false });
+        return res.json({ res: "Falta ingresar un id de mensaje", borrada: false });
     }
 
     try {
-        let respuesta = await realizarQuery(`SELECT * FROM Mensajes WHERE id_mensaje="${req.body.id_mensaje}"`);
+        let respuesta = await realizarQuery(`SELECT * FROM Mensajes WHERE id_mensaje=${req.body.id_mensaje}`);
 
         if (respuesta.length > 0) {
-            await realizarQuery(`DELETE FROM Mensajes WHERE id_mensajes="${req.body.id_mensaje}"`);
-            res.send({ res: "Mensajes eliminado", borrada: true });
+            await realizarQuery(`DELETE FROM Mensajes WHERE id_mensaje=${req.body.id_mensaje}`);
+            res.json({ res: "Mensajes eliminado", borrada: true });
         } else {
-            res.send({ res: "El mensaje no existe", borrada: false });
+            res.json({ res: "El mensaje no existe", borrada: false });
         }
     } catch (error) {
         console.error("Error al borrar mensaje:", error);
-        res.status(500).send({ res: "Error interno", borrada: false });
+        res.status(500).json({ res: "Error interno", borrada: false });
     }
 });
 
@@ -179,19 +179,19 @@ app.delete('/BorrarMensaje', async function (req, res) {
 app.post('/RegistroUsuarios', async function(req,res) {
     console.log("/registro req.body:"+req.body) 
     let respuesta;
-    if (req.body.id_usuario != undefined) {
-        respuesta = await realizarQuery(`SELECT * FROM Usuarios WHERE id_usuario=${req.body.id_usuario}`)
+    if (req.body.numero_telefono != undefined) {
+        respuesta = await realizarQuery(`SELECT * FROM Usuarios WHERE numero_telefono=${req.body.numero_telefono}`)
         console.log(respuesta)
         if (respuesta.length != 0) {
-            res.send({res: "Ese numero de telefono ya existe", registro:false})}
+            res.json({res: "Ese numero de telefono ya existe", registro:false})}
         else{
            await realizarQuery(`
-            INSERT INTO Usuarios (id_usuario,contraseña,nombre,mail) VALUES
-            (${req.body.id_usuario},'${req.body.contraseña}','${req.body.nombre}','${req.body.mail}')`)
-        res.send({res: "Usuario agregado", registro: true})
+            INSERT INTO Usuarios (numero_telefono,contraseña,nombre,mail) VALUES
+            ("${req.body.numero_telefono}",'${req.body.contraseña}','${req.body.nombre}','${req.body.mail}')`)
+            res.json({res: "Usuario agregado", registro: true})
     }
     } else {
-        res.send({res: "Falta numero de telefono", registro:false})
+        res.json({res: "Falta numero de telefono", registro:false})
 
     }    
 
@@ -201,33 +201,33 @@ app.post('/RegistroUsuarios', async function(req,res) {
 app.post('/LoginUsuarios', async function(req,res) {
     console.log(req.body) 
     let respuesta;
-    if (req.body.id_usuario != undefined) {
-        respuesta = await realizarQuery(`SELECT * FROM Usuarios WHERE id_usuario=${req.body.id_usuario}`)
+    if (req.body.numero_telefono != undefined) {
+        respuesta = await realizarQuery(`SELECT * FROM Usuarios WHERE numero_telefono="${req.body.numero_telefono}"`)
         console.log(respuesta)
         if (respuesta.length > 0) {
             if (req.body.contraseña != undefined) {
-                respuesta = await realizarQuery(`SELECT * FROM Usuarios WHERE id_usuario=${req.body.id_usuario} && contraseña="${req.body.contraseña}"`)
+                respuesta = await realizarQuery(`SELECT * FROM Usuarios WHERE numero_telefono="${req.body.numero_telefono}" && contraseña="${req.body.contraseña}"`)
                 if  (respuesta.length > 0) {
                     console.log(respuesta)
-                    res.send({
+                    res.json({
                         res: "Usuario existe",
                         loguea: true,
                         //admin: Boolean(respuesta[0].administrador)
 })
                 }
                 else{
-                    res.send({res:"Contraseña incorrecta",loguea:false}) 
+                    res.json({res:"Contraseña incorrecta",loguea:false}) 
                 }
             }else{
-                res.send({res:"Falta ingresar contraseña",loguea:false})                
+                res.json({res:"Falta ingresar contraseña",loguea:false})                
             }
         } 
         else{
-            res.send({res:"Esta mal el numero de telefono",loguea:false})
+            res.json({res:"Esta mal el numero de telefono",loguea:false})
         }
     
     }else {
-        res.send({res:"Falta numero de telefono",loguea:false})
+        res.json({res:"Falta numero de telefono",loguea:false})
 
     }    
 

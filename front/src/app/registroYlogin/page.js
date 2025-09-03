@@ -9,6 +9,7 @@ import styles from "./page.module.css";
 export default function RegistroYLogin() {
   const [modo, setModo] = useState("login");
   const [nombre, setNombre] = useState("");
+  const [mail, setMail] = useState("");
   const [numeroTelefono, setNumeroTelefono] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -26,11 +27,11 @@ export default function RegistroYLogin() {
   async function ingresar() {
     const datosLogin = {
       numero_telefono: numeroTelefono,
-      password: password,
+      contraseña: password,
     };
 
     try {
-      const response = await fetch("http://localhost:3000/LoginUsuarios", {
+      const response = await fetch("http://localhost:4001/LoginUsuarios", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(datosLogin),
@@ -39,11 +40,11 @@ export default function RegistroYLogin() {
       const result = await response.json();
       console.log(result);
 
-      if (result.res === true) {
+      if (result.loguea) {
         showModal("Éxito", "¡Has iniciado sesión correctamente!");
         router.push("/dashboard");
       } else {
-        showModal("Error", result.message || "Credenciales incorrectas");
+        showModal("Error", result.res || "Credenciales incorrectas");
       }
     } catch (error) {
       console.error(error);
@@ -58,13 +59,14 @@ export default function RegistroYLogin() {
     }
 
     const datosRegistro = {
-      nombre,
+      nombre:nombre,
       numero_telefono: numeroTelefono,
-      password,
+      contraseña: password,
+      mail:mail,
     };
 
     try {
-      const response = await fetch("http://localhost:3000/RegistroUsuarios", {
+      const response = await fetch("http://localhost:4001/RegistroUsuarios", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(datosRegistro),
@@ -73,11 +75,11 @@ export default function RegistroYLogin() {
       const result = await response.json();
       console.log(result);
 
-      if (result.res === true) {
+      if (result.registro) {
         showModal("Éxito", "¡Usuario registrado correctamente!");
         setTimeout(() => setModo("login"), 1000);
       } else {
-        showModal("Error", result.message || "No se pudo registrar el usuario");
+        showModal("Error", result.res || "No se pudo registrar el usuario");
       }
     } catch (error) {
       console.error(error);
@@ -134,6 +136,13 @@ export default function RegistroYLogin() {
               placeholder="Teléfono"
               value={numeroTelefono}
               onChange={(e) => setNumeroTelefono(e.target.value)}
+            />
+            <input
+              className={styles.input}
+              type="text"
+              placeholder="Mail"
+              value={mail}
+              onChange={(e) => setMail(e.target.value)}
             />
             <input
               className={styles.input}

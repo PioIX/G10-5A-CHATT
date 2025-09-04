@@ -26,8 +26,8 @@ app.get('/', function(req, res){
 app.get('/Usuarios', async function(req, res){
    try {
      let respuesta;
-     if (req.query.numero_telefono != undefined) {
-         respuesta = await realizarQuery(`SELECT * FROM Usuarios WHERE numero_telefono="${req.query.numero_telefono}"`)
+     if (req.query.num_telefono != undefined) {
+         respuesta = await realizarQuery(`SELECT * FROM Usuarios WHERE num_telefono="${req.query.num_telefono}"`)
      } else {
          respuesta = await realizarQuery("SELECT * FROM Usuarios");
      }
@@ -108,17 +108,17 @@ app.get('/User_chat', async function(req, res){
 
 //delete usuarios
 app.delete('/BorrarUsuarios', async function (req, res) {
-    let numero_telefono = req.body.numero_telefono;
+    let num_telefono = req.body.num_telefono;
 
-    if (!numero_telefono) {
+    if (!num_telefono) {
         return res.json({ res: "Falta ingresar un numero de telefono", borrada: false });
     }
 
     try {
-        let respuesta = await realizarQuery(`SELECT * FROM Usuarios WHERE numero_telefono="${req.body.numero_telefono}"`);
+        let respuesta = await realizarQuery(`SELECT * FROM Usuarios WHERE num_telefono="${req.body.num_telefono}"`);
 
         if (respuesta.length > 0) {
-            await realizarQuery(`DELETE FROM Usuarios WHERE numero_telefono="${req.body.numero_telefono}"`);
+            await realizarQuery(`DELETE FROM Usuarios WHERE num_telefono="${req.body.num_telefono}"`);
             res.json({ res: "Usuario eliminado", borrada: true });
         } else {
             res.json({ res: "El usuario no existe", borrada: false });
@@ -175,38 +175,45 @@ app.delete('/BorrarMensaje', async function (req, res) {
     }
 });
 
-//registro numeros
-app.post('/RegistroUsuarios', async function(req,res) {
-    console.log("/registro req.body:"+req.body) 
-    let respuesta;
-    if (req.body.numero_telefono != undefined) {
-        respuesta = await realizarQuery(`SELECT * FROM Usuarios WHERE numero_telefono=${req.body.numero_telefono}`)
-        console.log(respuesta)
-        if (respuesta.length != 0) {
-            res.json({res: "Ese numero de telefono ya existe", registro:false})}
-        else{
-           await realizarQuery(`
-            INSERT INTO Usuarios (numero_telefono,contraseña,nombre,mail) VALUES
-            ("${req.body.numero_telefono}",'${req.body.contraseña}','${req.body.nombre}','${req.body.mail}')`)
-            res.json({res: "Usuario agregado", registro: true})
+app.post('/RegistroUsuarios', async function(req, res) {
+  console.log("/RegistroUsuarios req.body:", req.body);
+  try {
+    const { num_telefono, contraseña, nombre, mail } = req.body;
+
+    if (!num_telefono) {
+      return res.json({ res: "Falta numero de telefono", registro: false });
     }
-    } else {
-        res.json({res: "Falta numero de telefono", registro:false})
 
-    }    
+    // Si tu realizarQuery soporta placeholders, usalos. Acá dejo la forma sencilla:
+    let respuesta = await realizarQuery(`SELECT * FROM Usuarios WHERE num_telefono="${num_telefono}"`);
 
-})
+    if (respuesta.length !== 0) {
+      return res.json({ res: "Ese numero de telefono ya existe", registro: false });
+    }
+
+    await realizarQuery(`
+      INSERT INTO Usuarios (num_telefono, contraseña, nombre, mail)
+      VALUES ("${num_telefono}", "${contraseña}", "${nombre}", "${mail}")
+    `);
+
+    res.json({ res: "Usuario agregado", registro: true });
+  } catch (e) {
+    console.error("Error en /RegistroUsuarios:", e);
+    res.status(500).json({ res: "Error interno", registro: false });
+  }
+});
+
 
 //login numeros
 app.post('/LoginUsuarios', async function(req,res) {
     console.log(req.body) 
     let respuesta;
-    if (req.body.numero_telefono != undefined) {
-        respuesta = await realizarQuery(`SELECT * FROM Usuarios WHERE numero_telefono="${req.body.numero_telefono}"`)
+    if (req.body.num_telefono != undefined) {
+        respuesta = await realizarQuery(`SELECT * FROM Usuarios WHERE num_telefono="${req.body.num_telefono}"`)
         console.log(respuesta)
         if (respuesta.length > 0) {
             if (req.body.contraseña != undefined) {
-                respuesta = await realizarQuery(`SELECT * FROM Usuarios WHERE numero_telefono="${req.body.numero_telefono}" && contraseña="${req.body.contraseña}"`)
+                respuesta = await realizarQuery(`SELECT * FROM Usuarios WHERE num_telefono="${req.body.num_telefono}" && contraseña="${req.body.contraseña}"`)
                 if  (respuesta.length > 0) {
                     console.log(respuesta)
                     res.json({
@@ -484,6 +491,6 @@ app.delete('/BorrarJugador', async function (req, res) {
 
 
 //Pongo el servidor a escuchar
-app.listen(port, function(){
-    console.log(`Server running in http://localhost:${port}`);
+app.listen(port, () => {
+  console.log(`Servidor corriendo en http://localhost:${port}`);
 });

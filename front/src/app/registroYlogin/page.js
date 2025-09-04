@@ -10,7 +10,7 @@ export default function RegistroYLogin() {
   const [modo, setModo] = useState("login");
   const [nombre, setNombre] = useState("");
   const [mail, setMail] = useState("");
-  const [numeroTelefono, setNumeroTelefono] = useState("");
+  const [num_telefono, setNumTelefono] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [modal, setModal] = useState({ open: false, title: "", message: "" });
@@ -26,7 +26,7 @@ export default function RegistroYLogin() {
 
   async function ingresar() {
     const datosLogin = {
-      numero_telefono: numeroTelefono,
+      num_telefono: num_telefono,
       contraseña: password,
     };
 
@@ -60,10 +60,12 @@ export default function RegistroYLogin() {
 
     const datosRegistro = {
       nombre:nombre,
-      numero_telefono: numeroTelefono,
+      num_telefono: num_telefono,
       contraseña: password,
       mail:mail,
     };
+
+    console.log(datosRegistro);
 
     try {
       const response = await fetch("http://localhost:4001/RegistroUsuarios", {
@@ -97,8 +99,8 @@ export default function RegistroYLogin() {
               className={styles.input}
               type="text"
               placeholder="Teléfono"
-              value={numeroTelefono}
-              onChange={(e) => setNumeroTelefono(e.target.value)}
+              value={num_telefono}
+              onChange={(e) => setNumTelefono(e.target.value)}
             />
             <input
               className={styles.input}
@@ -134,8 +136,8 @@ export default function RegistroYLogin() {
               className={styles.input}
               type="text"
               placeholder="Teléfono"
-              value={numeroTelefono}
-              onChange={(e) => setNumeroTelefono(e.target.value)}
+              value={num_telefono}
+              onChange={(e) => setNumTelefono(e.target.value)}
             />
             <input
               className={styles.input}

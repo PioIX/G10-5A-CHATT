@@ -191,9 +191,18 @@ app.post('/RegistroUsuarios', async function(req, res) {
       return res.json({ res: "Ese numero de telefono ya existe", registro: false });
     }
 
+    let usuarios = await realizarQuery(`SELECT id_usuario FROM Usuarios `);
+    let id = -1
+    for (let i = 0; i < usuarios.length; i++) {
+        if(id < usuarios[i].id_usuario){
+            id = usuarios[i].id_usuario
+        }
+        
+    }
+    id++;
     await realizarQuery(`
-      INSERT INTO Usuarios (num_telefono, contraseña, nombre, mail)
-      VALUES ("${num_telefono}", "${contraseña}", "${nombre}", "${mail}")
+      INSERT INTO Usuarios (id_usuario, num_telefono, contraseña, nombre, mail)
+      VALUES (${id},"${num_telefono}", "${contraseña}", "${nombre}", "${mail}")
     `);
 
     res.json({ res: "Usuario agregado", registro: true });

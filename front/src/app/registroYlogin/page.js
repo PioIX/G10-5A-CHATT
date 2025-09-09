@@ -12,6 +12,7 @@ export default function RegistroYLogin() {
   const [mail, setMail] = useState("");
   const [num_telefono, setNumTelefono] = useState("");
   const [password, setPassword] = useState("");
+  const [foto_perfil, setlinkFoto] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [modal, setModal] = useState({ open: false, title: "", message: "" });
   const router = useRouter();
@@ -42,7 +43,7 @@ export default function RegistroYLogin() {
 
       if (result.loguea) {
         showModal("Éxito", "¡Has iniciado sesión correctamente!");
-        router.push("/dashboard");
+        router.push("/chat");
       } else {
         showModal("Error", result.res || "Credenciales incorrectas");
       }
@@ -63,6 +64,7 @@ export default function RegistroYLogin() {
       num_telefono: num_telefono,
       contraseña: password,
       mail:mail,
+      foto_perfil: foto_perfil,
     };
 
     console.log(datosRegistro);
@@ -80,6 +82,7 @@ export default function RegistroYLogin() {
       if (result.registro) {
         showModal("Éxito", "¡Usuario registrado correctamente!");
         setTimeout(() => setModo("login"), 1000);
+        router.push("/chat");
       } else {
         showModal("Error", result.res || "No se pudo registrar el usuario");
       }
@@ -145,6 +148,13 @@ export default function RegistroYLogin() {
               placeholder="Mail"
               value={mail}
               onChange={(e) => setMail(e.target.value)}
+            />
+            <input
+              className={styles.input}
+              type="text"
+              placeholder="Link de foto"
+              value={foto_perfil}
+              onChange={(e) => setlinkFoto(e.target.value)}
             />
             <input
               className={styles.input}

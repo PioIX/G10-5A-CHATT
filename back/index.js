@@ -40,7 +40,7 @@ app.get('/Usuarios', async function(req, res){
         res.json("Hubo un error, " + e)
         
    }
-});
+});0
 
 
 //get chats
@@ -178,7 +178,7 @@ app.delete('/BorrarMensaje', async function (req, res) {
 app.post('/RegistroUsuarios', async function(req, res) {
   console.log("/RegistroUsuarios req.body:", req.body);
   try {
-    const { num_telefono, contraseña, nombre, mail } = req.body;
+    const { num_telefono, contraseña, nombre, mail , foto_perfil} = req.body;
 
     if (!num_telefono) {
       return res.json({ res: "Falta numero de telefono", registro: false });
@@ -201,8 +201,8 @@ app.post('/RegistroUsuarios', async function(req, res) {
     }
     id++;
     await realizarQuery(`
-      INSERT INTO Usuarios (id_usuario, num_telefono, contraseña, nombre, mail)
-      VALUES (${id},"${num_telefono}", "${contraseña}", "${nombre}", "${mail}")
+      INSERT INTO Usuarios (id_usuario, foto_perfil  num_telefono, contraseña, nombre, mail)
+      VALUES (${id},"${foto_perfil}","${num_telefono}", "${contraseña}", "${nombre}", "${mail}")
     `);
 
     res.json({ res: "Usuario agregado", registro: true });

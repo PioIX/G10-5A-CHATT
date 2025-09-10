@@ -178,13 +178,12 @@ app.delete('/BorrarMensaje', async function (req, res) {
 app.post('/RegistroUsuarios', async function(req, res) {
   console.log("/RegistroUsuarios req.body:", req.body);
   try {
-    const { num_telefono, contraseña, nombre, mail , foto_perfil} = req.body;
+    const { foto_perfil, num_telefono, contraseña, nombre, mail } = req.body;
 
     if (!num_telefono) {
       return res.json({ res: "Falta numero de telefono", registro: false });
     }
 
-    // Si tu realizarQuery soporta placeholders, usalos. Acá dejo la forma sencilla:
     let respuesta = await realizarQuery(`SELECT * FROM Usuarios WHERE num_telefono="${num_telefono}"`);
 
     if (respuesta.length !== 0) {
@@ -201,7 +200,7 @@ app.post('/RegistroUsuarios', async function(req, res) {
     }
     id++;
     await realizarQuery(`
-      INSERT INTO Usuarios (id_usuario, foto_perfil  num_telefono, contraseña, nombre, mail)
+      INSERT INTO Usuarios (id_usuario, foto_perfil, num_telefono, contraseña, nombre, mail)
       VALUES (${id},"${foto_perfil}","${num_telefono}", "${contraseña}", "${nombre}", "${mail}")
     `);
 

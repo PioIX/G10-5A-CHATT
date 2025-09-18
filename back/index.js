@@ -4,6 +4,7 @@
 var express = require('express'); //Tipo de servidor: Express
 var bodyParser = require('body-parser'); //Convierte los JSON
 var cors = require('cors');
+const session = require('express-session');
 const { realizarQuery } = require('./modulos/mysql');
 
 var app = express(); //Inicializo express
@@ -21,6 +22,78 @@ app.get('/', function(req, res){
         message: 'GET Home route working fine!'
     });
 });
+				
+
+
+
+const server = app.listen(port, () => {
+	console.log(`Servidor NodeJS corriendo en http://localhost:${port}/`);
+});;
+
+const io = require('socket.io')(server, {
+	cors: {
+		// IMPORTANTE: REVISAR PUERTO DEL FRONTEND
+		origin: ["http://localhost:3000", "http://localhost:3001"], // Permitir el origen localhost:3000
+		methods: ["GET", "POST", "PUT", "DELETE"],  	// Métodos permitidos
+		credentials: true                           	// Habilitar el envío de cookies
+	}
+});
+
+const sessionMiddleware = session({
+	//Elegir tu propia key secreta
+	secret: "supersarasa",
+	resave: false,
+	saveUninitialized: false
+});
+
+app.use(sessionMiddleware);
+
+io.use((socket, next) => {
+	sessionMiddleware(socket.request, {}, next);
+});
+
+/*
+	A PARTIR DE ACÁ LOS EVENTOS DEL SOCKET
+	A PARTIR DE ACÁ LOS EVENTOS DEL SOCKET
+	A PARTIR DE ACÁ LOS EVENTOS DEL SOCKET
+*/
+
+
+// SOLO UN BLOQUE DE CONEXIÓN SOCKET.IO
+io.on("connection", (socket) => {
+    console.log("Usuario conectado:", socket.id);
+
+    socket.on("joinChat", (chatId) => {
+        socket.join(chatId);
+        console.log(`Usuario se unió al chat ${chatId}`);
+    });
+
+    socket.on("sendMessage", async (data) => {
+        const { id_chat, num_telefono, contenido } = data;
+
+        try {
+            await realizarQuery(`
+                INSERT INTO Mensajes (id_chat, num_telefono, fecha_envio, contenido)
+                VALUES ("${id_chat}", "${num_telefono}", NOW(), "${contenido}");
+            `);
+
+            const [ultimo] = await realizarQuery(`
+                SELECT * FROM Mensajes
+                WHERE id_chat = "${id_chat}" AND num_telefono = "${num_telefono}"
+                ORDER BY id_mensaje DESC LIMIT 1;
+            `);
+
+            io.to(id_chat).emit("newMessage", ultimo);
+        } catch (error) {
+            console.error("Error al enviar mensaje por socket:", error);
+        }
+    });
+
+    socket.on("disconnect", () => {
+        console.log("Usuario desconectado:", socket.id);
+    });
+});
+
 
 //get usuarios
 app.get('/Usuarios', async function(req, res){
@@ -105,6 +178,118 @@ app.get('/User_chat', async function(req, res){
         
    }
 });
+
+//get contactos de un usuario
+app.get('/ContactosUsuario', async function(req, res) {
+  const { num_telefono } = req.query;
+
+  if (!num_telefono) {
+    return res.status(400).json({ error: "Falta el número de teléfono" });
+  }
+
+  const query = `
+    SELECT DISTINCT u.id_usuario, u.nombre, u.foto_perfil, u.num_telefono
+    FROM Usuarios u
+    JOIN User_chat uc ON u.num_telefono = uc.num_telefono
+    WHERE uc.id_chat IN (
+      SELECT id_chat FROM User_chat WHERE num_telefono = "${num_telefono}"
+    )
+    AND u.num_telefono != "${num_telefono}";
+  `;
+
+  try {
+    const contactos = await realizarQuery(query);
+    res.status(200).json({ contactos });
+  } catch (error) {
+    console.error("Error en /ContactosUsuario:", error);
+    res.status(500).json({ error: "Error interno al obtener contactos" });
+  }
+});
+
+//get de buscarchat
+app.get('/BuscarChat', async function(req, res) {
+  const { usuario1, usuario2 } = req.query;
+
+  if (!usuario1 || !usuario2) {
+    return res.status(400).json({ error: "Faltan usuarios" });
+  }
+
+  const query = `
+    SELECT uc1.id_chat
+    FROM User_chat uc1
+    JOIN User_chat uc2 ON uc1.id_chat = uc2.id_chat
+    WHERE uc1.num_telefono = "${usuario1}" AND uc2.num_telefono = "${usuario2}"
+    LIMIT 1;
+  `;
+
+  try {
+    const resultado = await realizarQuery(query);
+    if (resultado.length > 0) {
+      res.json({ id_chat: resultado[0].id_chat });
+    } else {
+      res.json({ id_chat: null });
+    }
+  } catch (error) {
+    console.error("Error en /BuscarChat:", error);
+    res.status(500).json({ error: "Error interno al buscar el chat" });
+  }
+});
+
+//get de mensajes de un chat
+app.get('/MensajesChat', async function(req, res) {
+  const { id_chat } = req.query;
+
+  if (!id_chat) {
+    return res.status(400).json({ error: "Falta el id_chat" });
+  }
+
+  const query = `
+    SELECT m.id_mensaje, m.contenido, m.fecha_envio, m.num_telefono, u.nombre
+    FROM Mensajes m
+    JOIN Usuarios u ON m.num_telefono = u.num_telefono
+    WHERE m.id_chat = "${id_chat}"
+    ORDER BY m.fecha_envio ASC;
+  `;
+
+  try {
+    const mensajes = await realizarQuery(query);
+    res.json({ mensajes });
+  } catch (error) {
+    console.error("Error en /MensajesChat:", error);
+    res.status(500).json({ error: "Error interno al obtener mensajes" });
+  }
+});
+
+
+//enviar mensaje
+app.post('/EnviarMensaje', async function(req, res) {
+  const { id_chat, num_telefono, contenido } = req.body;
+
+  if (!id_chat || !num_telefono || !contenido) {
+    return res.status(400).json({ enviado: false, error: "Faltan datos" });
+  }
+
+  try {
+    await realizarQuery(`
+      INSERT INTO Mensajes (id_chat, num_telefono, fecha_envio, contenido)
+      VALUES ("${id_chat}", "${num_telefono}", NOW(), "${contenido}");
+    `);
+
+    const [ultimo] = await realizarQuery(`
+      SELECT * FROM Mensajes
+      WHERE id_chat = "${id_chat}" AND num_telefono = "${num_telefono}"
+      ORDER BY id_mensaje DESC LIMIT 1;
+    `);
+
+    res.json({ enviado: true, mensaje: ultimo });
+  } catch (error) {
+    console.error("Error en /EnviarMensaje:", error);
+    res.status(500).json({ enviado: false, error: "Error interno al enviar mensaje" });
+  }
+});
+
+
+
 
 //delete usuarios
 app.delete('/BorrarUsuarios', async function (req, res) {
@@ -498,7 +683,10 @@ app.delete('/BorrarJugador', async function (req, res) {
 
 
 
-//Pongo el servidor a escuchar
+/*Pongo el servidor a escuchar
 app.listen(port, () => {
   console.log(`Servidor corriendo en http://localhost:${port}`);
 });
+*/
+
+

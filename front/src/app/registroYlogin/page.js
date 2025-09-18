@@ -44,6 +44,7 @@ export default function RegistroYLogin() {
       if (result.loguea) {
         showModal("Éxito", "¡Has iniciado sesión correctamente!");
         router.push("/chat");
+        
       } else {
         showModal("Error", result.res || "Credenciales incorrectas");
       }
@@ -82,7 +83,7 @@ export default function RegistroYLogin() {
       if (result.registro) {
         showModal("Éxito", "¡Usuario registrado correctamente!");
         setTimeout(() => setModo("login"), 1000);
-        router.push("/chat");
+        router.push("/listaContactos");
       } else {
         showModal("Error", result.res || "No se pudo registrar el usuario");
       }

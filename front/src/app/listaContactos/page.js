@@ -8,10 +8,9 @@ export default function ChatList() {
   const [contactos, setContactos] = useState([]);
   const router = useRouter();
 
-  // Simulamos que el número está guardado en localStorage
-  const num_telefono = typeof window !== "undefined" ? localStorage.getItem("num_telefono") : null;
-
   useEffect(() => {
+    const num_telefono = typeof window !== "undefined" ? localStorage.getItem("num_telefono") : null;
+
     async function cargarContactos() {
       const res = await fetch(`http://localhost:4001/ContactosUsuario?num_telefono=${num_telefono}`);
       const data = await res.json();
@@ -23,10 +22,10 @@ export default function ChatList() {
     } else {
       router.push("/");
     }
-  }, []);
+  }, []); // Solo al montar
 
   const abrirChat = async (telefonoContacto) => {
-    // Acá podrías buscar el id_chat compartido y redirigir
+    const num_telefono = typeof window !== "undefined" ? localStorage.getItem("num_telefono") : null;
     const res = await fetch(`http://localhost:4001/BuscarChat?usuario1=${num_telefono}&usuario2=${telefonoContacto}`);
     const data = await res.json();
     if (data.id_chat) {

@@ -43,7 +43,7 @@ export default function RegistroYLogin() {
 
       if (result.loguea) {
         showModal("Éxito", "¡Has iniciado sesión correctamente!");
-        router.push("/chat");
+        router.push("/listaContactos");
         
       } else {
         showModal("Error", result.res || "Credenciales incorrectas");

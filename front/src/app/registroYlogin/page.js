@@ -41,12 +41,14 @@ export default function RegistroYLogin() {
       const result = await response.json();
       console.log(result);
 
+     
       if (result.loguea) {
-        showModal("Éxito", "¡Has iniciado sesión correctamente!");
-        router.push("/listaContactos");
-        
+      
+        alert("Éxito", "¡Has iniciado sesión correctamente!");
+        localStorage.setItem("idLogged",response.idLogged);
+        router.push("/home");
       } else {
-        showModal("Error", result.res || "Credenciales incorrectas");
+        alert("Error", result.res || "Credenciales incorrectas");
       }
     } catch (error) {
       console.error(error);
@@ -81,9 +83,10 @@ export default function RegistroYLogin() {
       console.log(result);
 
       if (result.registro) {
-        showModal("Éxito", "¡Usuario registrado correctamente!");
+        alert("Éxito", "¡Usuario registrado correctamente!");
+        localStorage.setItem("idLogged", response.idLogged);
         setTimeout(() => setModo("login"), 1000);
-        router.push("/listaContactos");
+        router.push("/home");
       } else {
         showModal("Error", result.res || "No se pudo registrar el usuario");
       }

@@ -45,7 +45,7 @@ export default function RegistroYLogin() {
       if (result.loguea) {
       
         alert("Éxito", "¡Has iniciado sesión correctamente!");
-        localStorage.setItem("idLogged",response.idLogged);
+        localStorage.setItem("idLogged",result.idLogged);
         router.push("/home");
       } else {
         alert("Error", result.res || "Credenciales incorrectas");
@@ -84,7 +84,7 @@ export default function RegistroYLogin() {
 
       if (result.registro) {
         alert("Éxito", "¡Usuario registrado correctamente!");
-        localStorage.setItem("idLogged", response.idLogged);
+        localStorage.setItem("idLogged", result.idLogged);
         setTimeout(() => setModo("login"), 1000);
         router.push("/home");
       } else {

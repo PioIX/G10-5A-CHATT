@@ -252,41 +252,18 @@ app.post('/LoginUsuarios', async function(req,res) {
 //post para obtener los chats de un usuario
 app.post('/Chats', async function (req,res){
     console.log(req.body)
-    const chats = await realizarQuery(` SELECT DISTINCT
-          c.id_chat,
-          c.es_grupo,
-          c.nombre_grupo AS nombre,
-          c.foto_grupo   AS foto,
-          c.descripcion  AS descripcion
-      FROM UsuariosPorChat upc
-      INNER JOIN Chats c
-          ON upc.id_chat = c.id_chat
-      WHERE upc.id_usuario = ${req.body.idLogged}
-        AND c.es_grupo = 1
-
-
-      UNION
-
-
-      -- Chats privados (solo info del otro usuario)
-      SELECT
-          c.id_chat,
-          c.es_grupo,
-          CONCAT(u.nombre, ' ', u.apellido) AS nombre,
-          u.foto_perfil AS foto,
-          u.descripcion AS descripcion
-      FROM UsuariosPorChat upc
-      INNER JOIN Chats c
-          ON upc.id_chat = c.id_chat
-      INNER JOIN UsuariosPorChat upc2
-          ON upc2.id_chat = c.id_chat
-         AND upc2.id_usuario <> ${req.body.idLogged}
-      INNER JOIN Usuarios u
-          ON u.id_usuario = upc2.id_usuario
-      WHERE upc.id_usuario = ${req.body.idLogged}
-        AND c.es_grupo = 0;`)
+    const chats = await realizarQuery(` SELECT DISTINCT id_chat FROM UsuariosPorChat WHERE id_usuario =  ${req.body.idLogged};`)
+    let contactos = []
+    for (let i = 0; i < chats.length; i++) {
+        const auxiliar = await realizarQuery(` SELECT DISTINCT Usuarios.nombre, Usuarios.id_usuario, Chats.es_grupo, Chats.nombre_grupo FROM Usuarios
+        INNER JOIN UsuariosPorChat ON Usuarios.id_usuario = UsuariosPorChat.id_usuario
+        INNER JOIN Chats ON Chats.id_chat = UsuariosPorChat.id_chat
+         WHERE UsuariosPorChat.id_chat = ${chats[i].id_chat};`)
+        contactos.push(auxiliar)
+    }
+    console.log(contactos)
     if(chats.length > 0){
-        res.send({chats})
+        res.send({contactos})
     }else{
         res.send({res: error})
     }

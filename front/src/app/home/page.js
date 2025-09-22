@@ -7,7 +7,7 @@ import styles from "./page.module.css"
 import { useEffect, useState } from "react"
 
 export default function Home() {
-    const [idLogged, setIdLogged] = useState(0);
+    const [idLogged, setIdLogged] = useState(-1);
     const [mandar, setMandar] = useState(0);
     const [src, setSrc] = useState(0);
     const [contact, setContact] = useState(0);
@@ -15,6 +15,13 @@ export default function Home() {
     useEffect(() => {
         setIdLogged(localStorage.getItem("idLogged"))
     }, [])
+
+    useEffect(()=>{
+        if (idLogged != -1) {
+            traerChats()
+        
+        }
+    }, [idLogged])
 
     function enviar() {}
 

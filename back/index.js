@@ -265,7 +265,7 @@ app.post('/Chats', async function (req,res){
     if(chats.length > 0){
         res.send({contactos})
     }else{
-        res.send({res: error})
+        res.send({res: "no tiene contactos"})
     }
      
 })

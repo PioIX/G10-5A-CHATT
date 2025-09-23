@@ -11,6 +11,7 @@ export default function Home() {
     const [mandar, setMandar] = useState(0);
     const [src, setSrc] = useState(0);
     const [contact, setContact] = useState(0);
+    const [contacts, setContacts] = useState([]);
 
     useEffect(() => {
         setIdLogged(localStorage.getItem("idLogged"))
@@ -22,6 +23,14 @@ export default function Home() {
         
         }
     }, [idLogged])
+
+    useEffect(()=>{
+
+        // ejecuta cuando se modifica contacts
+        console.log("contacts modificado", contacts)
+
+
+    },[contacts])
 
     function enviar() {}
 
@@ -37,9 +46,11 @@ export default function Home() {
         })
             .then(response => response.json())
             .then(response => {
-                if (response) {
+                if (response && response.contactos) {
                     console.log(response)
-                    return (response)
+                    const contactosPlanos = response.contactos.flat();
+                    setContacts(contactosPlanos);
+                    //return (response)
                 } else {
                     alert("Número de teléfono o contraseña incorrectos");
                 }
@@ -55,7 +66,15 @@ export default function Home() {
                     <Button onClick={buscar} />
                 </div>
                 <div className={styles["contacts-list"]}>
-                    <Contact src={src} contact={contact} />
+                    {contacts.length > 0 ? (
+                        contacts.map((contact, index) => (
+                            <Contact key={index} src={contact.foto_perfil} contact={contact.nombre} online={contact.estado}/>
+                        
+                            
+                        ))
+                    ) : (
+                        <p>No hay contactos</p>
+                    )}
                 </div>
                 <Button onClick={traerChats} text={"traer contactos"} />
             </div>

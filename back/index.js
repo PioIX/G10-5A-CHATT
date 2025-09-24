@@ -1,7 +1,7 @@
 
 //ES EL INDEX DEL PROYECTO ANTERIOR PERO LO VOY A USAR DE BASE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-var express = require('express'); //Tipo de servidor: Express
+/*var express = require('express'); //Tipo de servidor: Express
 var bodyParser = require('body-parser'); //Convierte los JSON
 var cors = require('cors');
 const { realizarQuery } = require('./modulos/mysql');
@@ -21,6 +21,78 @@ app.get('/', function(req, res){
         message: 'GET Home route working fine!'
     });
 });
+*/
+
+const port = process.env.PORT || 4001;								// Puerto por el que estoy ejecutando la página Web
+
+const cors = require('cors');
+const session = require('express-session');				// Para el manejo de las variables de sesión
+
+app.use(cors());
+
+const server = app.listen(port, () => {
+	console.log(`Servidor NodeJS corriendo en http://localhost:${port}/`);
+});;
+
+const io = require('socket.io')(server, {
+	cors: {
+		// IMPORTANTE: REVISAR PUERTO DEL FRONTEND
+		origin: ["http://localhost:3000", "http://localhost:3001"], // Permitir el origen localhost:3000
+		methods: ["GET", "POST", "PUT", "DELETE"],  	// Métodos permitidos
+		credentials: true                           	// Habilitar el envío de cookies
+	}
+});
+
+const sessionMiddleware = session({
+	//Elegir tu propia key secreta
+	secret: "supersarasa",
+	resave: false,
+	saveUninitialized: false
+});
+
+app.use(sessionMiddleware);
+
+io.use((socket, next) => {
+	sessionMiddleware(socket.request, {}, next);
+});
+
+/*
+	A PARTIR DE ACÁ LOS EVENTOS DEL SOCKET
+	A PARTIR DE ACÁ LOS EVENTOS DEL SOCKET
+	A PARTIR DE ACÁ LOS EVENTOS DEL SOCKET
+*/
+
+io.on("connection", (socket) => {
+	const req = socket.request;
+
+	socket.on('joinRoom', data => {
+		console.log("🚀 ~ io.on ~ req.session.room:", req.session.room)
+		if (req.session.room != undefined && req.session.room.length > 0)
+			socket.leave(req.session.room);
+		req.session.room = data.room;
+		socket.join(req.session.room);
+
+		io.to(req.session.room).emit('chat-messages', { user: req.session.user, room: req.session.room });
+	});
+
+	socket.on('pingAll', data => {
+		console.log("PING ALL: ", data);
+		io.emit('pingAll', { event: "Ping to all", message: data });
+	});
+
+	socket.on('sendMessage', data => {
+		io.to(req.session.room).emit('newMessage', { room: req.session.room, message: data });
+	});
+
+	socket.on('disconnect', () => {
+		console.log("Disconnect");
+	})
+});
+
+
+
+
+
 
 //get usuarios
 app.get('/Usuarios', async function(req, res){
@@ -84,6 +156,29 @@ app.get('/Mensajes', async function(req, res){
         
    }
 });
+
+//PEDIR AYUDA A RIVAS PARA HACER EL PEDIDO
+app.get('/MensajesChats', async function (req,res){
+    console.log(req.query)
+    const mensajes = await realizarQuery(` SELECT DISTINCT id_chat FROM UsuariosPorChat WHERE id_usuario =  ${req.body.idLogged};`)
+    let contactos = []
+    for (let i = 0; i < chats.length; i++) {
+        const auxiliar = await realizarQuery(` SELECT DISTINCT Usuarios.nombre, Usuarios.id_usuario, Chats.es_grupo, Chats.nombre_grupo FROM Usuarios
+        INNER JOIN UsuariosPorChat ON Usuarios.id_usuario = UsuariosPorChat.id_usuario
+        INNER JOIN Chats ON Chats.id_chat = UsuariosPorChat.id_chat
+         WHERE UsuariosPorChat.id_chat = ${chats[i].id_chat};`)
+        contactos.push(auxiliar)
+    }
+    console.log(contactos)
+    if(chats.length > 0){
+        res.send({contactos})
+    }else{
+        res.send({res: "no tiene contactos"})
+    }
+     
+})
+
+
 
 
 //get user_chat

@@ -8,7 +8,7 @@ export default function Contact(props) {
         <>
             <div className={styles.contact}>
                 <div className={styles.fotoPerfil}>
-                    <img src={props.src} alt={props.contact} className={styles.imagen} />
+                    <img src={props.src} alt={props.name} className={styles.imagen} />
                     <span 
                         className={clsx(
                             styles.indicador,

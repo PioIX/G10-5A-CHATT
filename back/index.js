@@ -111,13 +111,14 @@ app.get('/Usuarios', async function(req, res){
 });
 
 //get mensajes del chat
-// GET mensajes de un chat donde participa un usuario
+
 app.get('/MensajesChat', async function(req, res) {
     const { id_chat, id_usuario } = req.query;
     if (!id_chat || !id_usuario) {
         return res.status(400).json({ error: "Faltan parámetros" });
     }
     try {
+        let respuesta = await realizarQuery(`SELECT * FROM Chats WHERE id_chat = ${id_chat}`);
         // Verifica que el usuario esté en el chat
         const pertenece = await realizarQuery(
             `SELECT * FROM UsuariosPorChat WHERE id_chat = ${id_chat} AND id_usuario = ${id_usuario}`
@@ -127,11 +128,14 @@ app.get('/MensajesChat', async function(req, res) {
         }
         // Trae los mensajes del chat
         const mensajes = await realizarQuery(`
-            SELECT m.id_mensaje, m.contenido, m.fecha_envio, m.num_telefono, u.nombre, m.id_chat
-            FROM Mensajes m
-            JOIN Usuarios u ON m.num_telefono = u.num_telefono
-            WHERE m.id_chat = "${id_chat}"
-            ORDER BY m.fecha_envio ASC
+            SELECT Mensajes.id_mensaje, Mensajes.contenido, Mensajes.fecha_envio, Mensajes.num_telefono, Usuarios.nombre, Chats.id_chat
+            FROM Mensajes INNERJOIN Chats ON Mensajes.id_chat = Chats.id_chat 
+            INNERJOIN UsuariosPorChat ON Chats.id_chat = UsuariosPorChat.id_chat
+            INNERJOIN Usuarios ON UsuariosPorChat.id_usuario = Usuarios.id_usuario
+
+            
+            WHERE Mensajes.id_chat = "${id_chat}"
+            ORDER BY Mensajes.fecha_envio ASC
         `);
         res.json({ mensajes });
     } catch (error) {

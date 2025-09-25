@@ -1,7 +1,7 @@
 
 //ES EL INDEX DEL PROYECTO ANTERIOR PERO LO VOY A USAR DE BASE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-/*var express = require('express'); //Tipo de servidor: Express
+const session = require('express-session');	
+var express = require('express'); //Tipo de servidor: Express
 var bodyParser = require('body-parser'); //Convierte los JSON
 var cors = require('cors');
 const { realizarQuery } = require('./modulos/mysql');
@@ -10,6 +10,7 @@ var app = express(); //Inicializo express
 var port = process.env.PORT || 4001; //Ejecuto el servidor en el puerto 3000
 
 // Convierte una petición recibida (POST-GET...) a objeto JSON
+app.use(express.json());
 app.use(bodyParser.urlencoded({extended:false}));
 app.use(bodyParser.json());
 app.use(cors());
@@ -21,14 +22,9 @@ app.get('/', function(req, res){
         message: 'GET Home route working fine!'
     });
 });
-*/
 
-const port = process.env.PORT || 4001;								// Puerto por el que estoy ejecutando la página Web
 
-const cors = require('cors');
-const session = require('express-session');				// Para el manejo de las variables de sesión
 
-app.use(cors());
 
 const server = app.listen(port, () => {
 	console.log(`Servidor NodeJS corriendo en http://localhost:${port}/`);
@@ -113,6 +109,38 @@ app.get('/Usuarios', async function(req, res){
         
    }
 });
+
+//get mensajes del chat
+// GET mensajes de un chat donde participa un usuario
+app.get('/MensajesChat', async function(req, res) {
+    const { id_chat, id_usuario } = req.query;
+    if (!id_chat || !id_usuario) {
+        return res.status(400).json({ error: "Faltan parámetros" });
+    }
+    try {
+        // Verifica que el usuario esté en el chat
+        const pertenece = await realizarQuery(
+            `SELECT * FROM UsuariosPorChat WHERE id_chat = ${id_chat} AND id_usuario = ${id_usuario}`
+        );
+        if (pertenece.length === 0) {
+            return res.status(403).json({ error: "El usuario no pertenece a este chat" });
+        }
+        // Trae los mensajes del chat
+        const mensajes = await realizarQuery(`
+            SELECT m.id_mensaje, m.contenido, m.fecha_envio, m.num_telefono, u.nombre, m.id_chat
+            FROM Mensajes m
+            JOIN Usuarios u ON m.num_telefono = u.num_telefono
+            WHERE m.id_chat = "${id_chat}"
+            ORDER BY m.fecha_envio ASC
+        `);
+        res.json({ mensajes });
+    } catch (error) {
+        console.error("Error en /MensajesChat:", error);
+        res.status(500).json({ error: "Error interno al obtener mensajes" });
+    }
+});
+
+
 
 
 //get chats
@@ -373,8 +401,3 @@ app.post('/Chats', async function (req,res){
 
 
 
-
-//Pongo el servidor a escuchar
-app.listen(port, () => {
-  console.log(`Servidor corriendo en http://localhost:${port}`);
-});

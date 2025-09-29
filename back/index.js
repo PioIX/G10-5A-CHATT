@@ -150,11 +150,20 @@ app.get('/MensajesChat', async function(req, res) {
         }
         console.log("id_chat encontrado:", id_chat);
         // Trae los mensajes del chat
-        const mensajes = await realizarQuery(`
-            SELECT Mensajes.id_mensaje, Mensajes.mensaje, Mensajes.hora_de_envio, Usuarios.nombre, Chats.id_chat FROM Mensajes INNER JOIN Chats ON Mensajes.id_chat = Chats.id_chat 
+        /*const mensajes = await realizarQuery(`
+            SELECT Mensajes.id_mensaje, Mensajes.mensaje, Mensajes.hora_de_envio, Usuarios.nombre, Usuarios.id_usuario, Chats.id_chat FROM Mensajes INNER JOIN Chats ON Mensajes.id_chat = Chats.id_chat 
             INNER JOIN UsuariosPorChat ON Chats.id_chat = UsuariosPorChat.id_chat INNER JOIN Usuarios ON UsuariosPorChat.id_usuario = Usuarios.id_usuario
             WHERE Mensajes.id_chat = "${id_chat}" ORDER BY Mensajes.hora_de_envio ASC
-        `);
+        `);*/
+        
+            const mensajes = await realizarQuery(`
+                SELECT Mensajes.id_mensaje, Mensajes.mensaje, Mensajes.hora_de_envio, Usuarios.nombre, Usuarios.id_usuario
+                FROM Mensajes
+                INNER JOIN Usuarios ON Mensajes.id_usuario = Usuarios.id_usuario
+                WHERE Mensajes.id_chat = "${id_chat}"
+                ORDER BY Mensajes.hora_de_envio ASC
+            `);
+
         res.send({ mensajes: mensajes });
     } catch (error) {
         console.error("Error en /MensajesChat:", error);

@@ -134,3 +134,36 @@
   padding: 0 !important;
   margin: 0 !important;
 }
+.mensajesArea {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
+}
+
+.chatInput {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  padding: 12px 0 0 0;
+  border-top: 1px solid #ddd;
+  background: #f7f7f7;
+  position: sticky;
+  bottom: 0;
+}
+
+.inputMensaje {
+  flex: 1;
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+
+.botonEnviar {
+  padding: 8px 16px;
+  border-radius: 6px;
+  border: none;
+  background: #25d366; /* verde WhatsApp */
+  color: #000;         /* texto negro */
+  font-weight: bold;
+  cursor: pointer;
+}

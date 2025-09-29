@@ -15,6 +15,7 @@ export default function Home() {
     const [contact, setContact] = useState(0);
     const [contacts, setContacts] = useState([]);
     const [mensajes, setMensajes] = useState([]);
+    const [mensajeNuevo, setMensajeNuevo] = useState([]);
     const [chatActivo, setChatActivo] = useState(null);
     const [showDropdown, setShowDropdown] = useState(false);
     const [allContacts, setAllContacts] = useState([]);
@@ -82,9 +83,7 @@ export default function Home() {
         };
 
     }, []);
-    /*useEffect(() => {
-        if (!socket) return;
-    }, [socket]);*/
+ 
     useEffect(() => {
       if (!socket) return;
    
@@ -106,8 +105,7 @@ export default function Home() {
      return () => { socket.off("newMessage"); };
     }, [socket, idLogged]);
 
-    
-
+   
 
   const showModal = (title, message) => {
     setModal({ open: true, title, message });
@@ -117,7 +115,33 @@ export default function Home() {
     setModal({ ...modal, open: false });
   };
 
-    function enviar() {}
+    async function enviarMensaje() {
+        if (!mensajeNuevo.trim() || !chatActivo || idLogged === -1) return;
+
+        const body = {
+            id_usuario: idLogged,
+            mensaje: mensajeNuevo,
+            id_chat: chatActivo,
+
+        };
+
+        try {
+            const res = await fetch("http://localhost:4001/insertarMensaje", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(body)
+            });
+            const data = await res.json();
+            if (data.validar) {
+                setMensajeNuevo(""); // Limpia el input
+                abrirChat(chatActivo); // Refresca los mensajes del chat
+            } else {
+            alert("No se pudo enviar el mensaje");
+            }
+        } catch (error) {
+            alert("Error al enviar el mensaje");
+        }
+}
 
 
     function nuevoChat() {
@@ -241,10 +265,9 @@ export default function Home() {
                             <ul className={styles.mensajesLista}>
                                 {mensajes.map((msg, i) => (
                                     <li key={i}
-                                    
-                                        className={msg.id_usuario === Number(idLogged) ? styles.mensajeDerecha : styles.mensajeIzquierda}>
-                                        <strong>{msg.nombre}:</strong> {msg.mensaje}
-                                    </li>
+                            className={msg.id_usuario === Number(idLogged) ? styles.mensajeDerecha : styles.mensajeIzquierda}>
+                            <strong>{msg.nombre}:</strong> {msg.mensaje}
+                        </li>
                                 ))}
                             </ul>
                         ) : (
@@ -253,6 +276,19 @@ export default function Home() {
                     ) : (
                         <p>Selecciona un chat para ver los mensajes.</p>
                     )}
+                </div>
+                <div className={styles.chatInput}>
+                    <Input
+                        placeholder="Escribe tu mensaje..."
+                        value={mensajeNuevo}
+                        onChange={e => setMensajeNuevo(e.target.value)}
+                        className={styles.inputMensaje}
+                    />
+                    <Button
+                        funcionalidad={enviarMensaje}
+                        texto="Enviar"
+                        className={styles.botonEnviar}
+                    />
                 </div>
             </div>
         </div>

@@ -18,6 +18,7 @@ export default function Home() {
     const [chatActivo, setChatActivo] = useState(null);
     const [showDropdown, setShowDropdown] = useState(false);
     const [allContacts, setAllContacts] = useState([]);
+    const [socket, setSocket] = useState([null]);
 
     useEffect(() => {
         const id = localStorage.getItem("idLogged");
@@ -54,7 +55,64 @@ export default function Home() {
 
 
     },[contacts])
+    
+    
+    async function fecha() {
+        const ahora = new Date();
+        // formatear la fecha: dd/mm/yyyy hh:mm:ss
+        const fechaFormateada = ahora.toLocaleString("es-AR", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        });
+        return fechaFormateada;
+  }
 
+
+
+    useEffect(() => {
+    if (!socket) return;
+    }, [socket]);
+
+    useEffect(() => {
+      if (!socket) return;
+   
+      socket.on("newMessage", (data) => {
+        console.log("Mensaje", data);
+   
+        setMensajes((todosMensajes) => [
+          ...todosMensajes,
+          {
+            contenido: data.message.contenido,
+            nombre: data.message.nombre,
+            src: data.message.src,
+            fecha:fecha(),
+            lado: data.message.idUsuario === idUsuarioActual ? "derecha" : "izquierda",
+          },
+        ]);
+      });
+   
+     return () => { socket.off("newMessage"); };
+    }, [socket, idUsuarioActual]);
+
+    useEffect(() => {
+        if (chatSeleccionadoId !== null) {
+        encontrarMensajesChat(chatSeleccionadoId);
+        }
+     }, [chatSeleccionadoId]);
+
+
+
+  const showModal = (title, message) => {
+    setModal({ open: true, title, message });
+  };
+
+  const closeModal = () => {
+    setModal({ ...modal, open: false });
+  };
 
     function enviar() {}
 
@@ -119,6 +177,13 @@ export default function Home() {
                 alert("Número de teléfono o contraseña incorrectos");
             }
         })
+    }
+
+
+
+
+    async function traerMensajes (){
+        
     }
 
     return (

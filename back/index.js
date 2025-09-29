@@ -398,6 +398,25 @@ app.post('/Chats', async function (req,res){
 })
 
 
+//insertar mensajes
+app.post('/insertarMensaje', async (req, res) => {
+    console.log(req.body);
+    const fechaActual = new Date();
+    const fechaString = `${fechaActual.getFullYear()}-${("0" + (fechaActual.getMonth() + 1)).slice(-2)}-${("0" + fechaActual.getDate()).slice(-2)} ${("0" + fechaActual.getHours()).slice(-2)}:${("0" + fechaActual.getMinutes()).slice(-2)}:${("0" + fechaActual.getSeconds()).slice(-2)}`;
+    
+    try {
+        await realizarQuery(`
+            INSERT INTO Mensaje (id_usuario, mensaje, hora_de_envio)
+            VALUES ("${req.body.id_usuario}",  "${req.body.mensaje}", "${fechaString}");
+        `);
+        res.send({ res: "Mensaje agregado correctamente", validar: true });
+    } catch (error) {
+        console.error("Error al insertar mensaje", error);
+        res.status(500).send({ res: "Error en el servidor", validar: false });
+    }
+});
+
+
 
 
 

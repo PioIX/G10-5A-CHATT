@@ -117,27 +117,45 @@ app.get('/MensajesChat', async function(req, res) {
     if (!id_chat || !id_usuario) {
         return res.status(400).json({ error: "Faltan parámetros" });
     }
+    console.log("id_chat:", id_chat, "id_usuario:", id_usuario);
     try {
-        let respuesta = await realizarQuery(`SELECT * FROM Chats WHERE id_chat = ${id_chat}`);
+        //Me traigo los id_chats donde este uno u otro usuario 
+        /*
+        let respuesta = await realizarQuery(`SELECT * FROM UsuariosPorChat WHERE id_usuario = ${idLogged} OR id_usuario = ${id_usuario}`);
+        if (respuesta.length === 0) {
+            return res.status(404).json({ error: "No se encontraron chats para los usuarios proporcionados" });
+        }
         // Verifica que el usuario esté en el chat
-        const pertenece = await realizarQuery(
-            `SELECT * FROM UsuariosPorChat WHERE id_chat = ${id_chat} AND id_usuario = ${id_usuario}`
-        );
-        if (pertenece.length === 0) {
+        console.log("respuesta:", respuesta);
+        let id_chat_logged = [];
+        let id_chat = -1;
+        for (let i = 0; i < respuesta.length; i++) {
+            const element = respuesta[i];
+            if (element.id_usuario == idLogged) {
+                id_chat_logged.push(element.id_chat);
+            }
+        }
+        for (let i = 0; i < respuesta.length; i++) {
+            const element = respuesta[i];
+            for (let l = 0; l < id_chat_logged.length; l++) {
+                if (element.id_chat == id_chat_logged[l]) {
+                    id_chat = element.id_chat;
+                }     
+            }
+            
+        }
+        */
+        if (id_chat === -1) {
             return res.status(403).json({ error: "El usuario no pertenece a este chat" });
         }
+        console.log("id_chat encontrado:", id_chat);
         // Trae los mensajes del chat
         const mensajes = await realizarQuery(`
-            SELECT Mensajes.id_mensaje, Mensajes.contenido, Mensajes.fecha_envio, Mensajes.num_telefono, Usuarios.nombre, Chats.id_chat
-            FROM Mensajes INNERJOIN Chats ON Mensajes.id_chat = Chats.id_chat 
-            INNERJOIN UsuariosPorChat ON Chats.id_chat = UsuariosPorChat.id_chat
-            INNERJOIN Usuarios ON UsuariosPorChat.id_usuario = Usuarios.id_usuario
-
-            
-            WHERE Mensajes.id_chat = "${id_chat}"
-            ORDER BY Mensajes.fecha_envio ASC
+            SELECT Mensajes.id_mensaje, Mensajes.mensaje, Mensajes.hora_de_envio, Usuarios.nombre, Chats.id_chat FROM Mensajes INNER JOIN Chats ON Mensajes.id_chat = Chats.id_chat 
+            INNER JOIN UsuariosPorChat ON Chats.id_chat = UsuariosPorChat.id_chat INNER JOIN Usuarios ON UsuariosPorChat.id_usuario = Usuarios.id_usuario
+            WHERE Mensajes.id_chat = "${id_chat}" ORDER BY Mensajes.hora_de_envio ASC
         `);
-        res.json({ mensajes });
+        res.send({ mensajes: mensajes });
     } catch (error) {
         console.error("Error en /MensajesChat:", error);
         res.status(500).json({ error: "Error interno al obtener mensajes" });
@@ -382,7 +400,7 @@ app.post('/Chats', async function (req,res){
     const chats = await realizarQuery(` SELECT DISTINCT id_chat FROM UsuariosPorChat WHERE id_usuario =  ${req.body.idLogged};`)
     let contactos = []
     for (let i = 0; i < chats.length; i++) {
-        const auxiliar = await realizarQuery(` SELECT DISTINCT Usuarios.nombre, Usuarios.id_usuario, Chats.es_grupo, Chats.nombre_grupo FROM Usuarios
+        const auxiliar = await realizarQuery(` SELECT DISTINCT Usuarios.nombre, Usuarios.id_usuario, Chats.es_grupo, Chats.nombre_grupo, Chats.id_chat FROM Usuarios
         INNER JOIN UsuariosPorChat ON Usuarios.id_usuario = UsuariosPorChat.id_usuario
         INNER JOIN Chats ON Chats.id_chat = UsuariosPorChat.id_chat
          WHERE UsuariosPorChat.id_chat = ${chats[i].id_chat};`)

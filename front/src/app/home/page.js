@@ -72,12 +72,13 @@ export default function Home() {
 
     //HACER!!!!!!!!!!!!!!!!!!!!!!!!!
     function abrirChat(id_chat) {
-        setChatActivo(id_chat);
+        console.log("Abriendo chat con id:", id_chat);
         fetch(`http://localhost:4001/MensajesChat?id_chat=${id_chat}&id_usuario=${idLogged}`)
             .then(res => res.json())
             .then(data => {
                 // Filtrar solo los mensajes donde el usuario logueado participa
                 if (data.mensajes) {
+                    console.log(data.mensajes)
                     setMensajes(data.mensajes.filter(m => m.num_telefono == localStorage.getItem("num_telefono") || m.id_chat == id_chat));
                 } else {
                     setMensajes([]);

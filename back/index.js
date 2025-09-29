@@ -430,11 +430,11 @@ app.post('/insertarMensaje', async (req, res) => {
     console.log(req.body);
     const fechaActual = new Date();
     const fechaString = `${fechaActual.getFullYear()}-${("0" + (fechaActual.getMonth() + 1)).slice(-2)}-${("0" + fechaActual.getDate()).slice(-2)} ${("0" + fechaActual.getHours()).slice(-2)}:${("0" + fechaActual.getMinutes()).slice(-2)}:${("0" + fechaActual.getSeconds()).slice(-2)}`;
-    
+    const chatActivo = req.body.id_chat;
     try {
         await realizarQuery(`
-            INSERT INTO Mensaje (id_usuario, mensaje, hora_de_envio)
-            VALUES ("${req.body.id_usuario}",  "${req.body.mensaje}", "${fechaString}");
+            INSERT INTO Mensajes (id_chat, id_usuario, mensaje, hora_de_envio)
+            VALUES (${chatActivo},"${req.body.id_usuario}",  "${req.body.mensaje}", "${fechaString}");
         `);
         res.send({ res: "Mensaje agregado correctamente", validar: true });
     } catch (error) {

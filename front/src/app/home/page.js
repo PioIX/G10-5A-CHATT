@@ -5,7 +5,7 @@ import Input from "@/components/Input"
 import Button from "@/components/Button"
 import Mensaje from "@/components/Mensaje"
 import styles from "./page.module.css"
-import { useEffect, useState } from "react"
+import { use, useEffect, useState } from "react"
 
 export default function Home() {
     const [idLogged, setIdLogged] = useState(-1);
@@ -18,12 +18,14 @@ export default function Home() {
     const [chatActivo, setChatActivo] = useState(null);
     const [showDropdown, setShowDropdown] = useState(false);
     const [allContacts, setAllContacts] = useState([]);
-    const [socket, setSocket] = useState([null]);
+    const [chatSeleccionadoId, setChatSeleccionadoId] = useState(null);
+    const [socket, setSocket] = useState(null);
+    const [modal, setModal] = useState({ open: false, title: "", message: "" });
+    //const [idUsuarioActual, setIdUsuarioActual] = useState(-1); // ID del usuario actual
 
     useEffect(() => {
         const id = localStorage.getItem("idLogged");
         setIdLogged(id);
-        // Traer nombre del usuario logueado
         fetch(`http://localhost:4001/Usuarios?num_telefono=${localStorage.getItem("num_telefono")}`)
             .then(res => res.json())
             .then(data => {
@@ -71,12 +73,18 @@ export default function Home() {
         return fechaFormateada;
   }
 
-
-
     useEffect(() => {
-    if (!socket) return;
-    }, [socket]);
+        const newSocket = io("http://localhost:4001");
+        setSocket(newSocket);
 
+        return () => {
+            newSocket.disconnect();
+        };
+
+    }, []);
+    /*useEffect(() => {
+        if (!socket) return;
+    }, [socket]);*/
     useEffect(() => {
       if (!socket) return;
    
@@ -90,20 +98,15 @@ export default function Home() {
             nombre: data.message.nombre,
             src: data.message.src,
             fecha:fecha(),
-            lado: data.message.idUsuario === idUsuarioActual ? "derecha" : "izquierda",
+            lado: data.message.idUsuario === idLogged ? "derecha" : "izquierda",
           },
         ]);
       });
    
      return () => { socket.off("newMessage"); };
-    }, [socket, idUsuarioActual]);
+    }, [socket, idLogged]);
 
-    useEffect(() => {
-        if (chatSeleccionadoId !== null) {
-        encontrarMensajesChat(chatSeleccionadoId);
-        }
-     }, [chatSeleccionadoId]);
-
+    
 
 
   const showModal = (title, message) => {
@@ -131,13 +134,16 @@ export default function Home() {
     //HACER!!!!!!!!!!!!!!!!!!!!!!!!!
     function abrirChat(id_chat) {
         console.log("Abriendo chat con id:", id_chat);
+        setChatActivo(id_chat);
+        setChatSeleccionadoId(id_chat); // Esto disparará el useEffect para traer los mensajes
         fetch(`http://localhost:4001/MensajesChat?id_chat=${id_chat}&id_usuario=${idLogged}`)
             .then(res => res.json())
             .then(data => {
                 // Filtrar solo los mensajes donde el usuario logueado participa
                 if (data.mensajes) {
+                    const mensajesNoDuplicados = Array.from(new Map(data.mensajes.map(m => [m.id_mensaje, m])).values());
                     console.log(data.mensajes)
-                    setMensajes(data.mensajes.filter(m => m.num_telefono == localStorage.getItem("num_telefono") || m.id_chat == id_chat));
+                    setMensajes(mensajesNoDuplicados);
                 } else {
                     setMensajes([]);
                 }
@@ -232,10 +238,12 @@ export default function Home() {
                 <div id="mensajes">
                     {chatActivo ? (
                         mensajes.length > 0 ? (
-                            <ul>
+                            <ul className={styles.mensajesLista}>
                                 {mensajes.map((msg, i) => (
-                                    <li key={i}>
-                                        <strong>{msg.nombre}:</strong> {msg.contenido}
+                                    <li key={i}
+                                    
+                                        className={msg.id_usuario === Number(idLogged) ? styles.mensajeDerecha : styles.mensajeIzquierda}>
+                                        <strong>{msg.nombre}:</strong> {msg.mensaje}
                                     </li>
                                 ))}
                             </ul>

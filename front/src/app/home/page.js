@@ -219,23 +219,58 @@ export default function Home() {
 
     return (
         <div className={styles.container}>
-            <div className={styles.sidebar}>
-                <div id="usuario-logueado" style={{textAlign: 'right', marginBottom: 10}}>
-                    <strong>Usuario:</strong> {nombreUsuario}
-                </div>
-                <div id="nuevo-chat">
-                    <Button onClick={nuevoChat} text={"Nuevo chat"} />
-                    {showDropdown && (
-                        <div style={{background: '#fff', border: '1px solid #ccc', maxHeight: 200, overflowY: 'auto', position: 'absolute', zIndex: 10}}>
-                            <ul style={{listStyle: 'none', margin: 0, padding: 0}}>
-                                {allContacts.map((c, i) => (
-                                    <li key={i} style={{padding: 8, cursor: 'pointer'}} onClick={() => iniciarChatConContacto(c)}>
-                                        {c.nombre}
+            {/* Modal de usuarios disponibles */}
+            {showDropdown && (
+                <div className={styles.modalOverlay} onClick={() => setShowDropdown(false)}>
+                    <div className={styles.modalContent} onClick={e => e.stopPropagation()} style={{maxWidth: 400}}>
+                        <div className={styles.dropdownHeader}>
+                            <strong>Usuarios disponibles</strong>
+                            <button className={styles.closeBtn} onClick={() => setShowDropdown(false)}>✕</button>
+                        </div>
+                        {allContacts.length > 0 ? (
+                            <ul className={styles.dropdownList}>
+                                {allContacts.map((usuario, i) => (
+                                    <li key={i} className={styles.dropdownItem}
+                                        onClick={() => iniciarChatConContacto(usuario)}>
+                                        <div className={styles.usuarioInfo}>
+                                            <img src={usuario.foto_perfil || '/default-avatar.png'} alt={usuario.nombre} className={styles.usuarioAvatar} />
+                                            <div>
+                                                <div className={styles.usuarioNombre}>{usuario.nombre}</div>
+                                                <div className={styles.usuarioTelefono}>{usuario.num_telefono}</div>
+                                            </div>
+                                        </div>
                                     </li>
                                 ))}
                             </ul>
-                        </div>
-                    )}
+                        ) : (
+                            <p className={styles.noUsuarios}>No hay usuarios disponibles</p>
+                        )}
+                    </div>
+                </div>
+            )}
+
+            {/* Modal de mensajes generales */}
+            {modal.open && (
+                <div className={styles.modalOverlay} onClick={closeModal}>
+                    <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
+                        <h2>{modal.title}</h2>
+                        <p>{modal.message}</p>
+                        <Button onClick={closeModal} text="Cerrar" />
+                    </div>
+                </div>
+            )}
+
+            <div className={styles.sidebar}>
+                {/* Botón Nuevo chat arriba a la izquierda, bien visible */}
+                <div id="nuevo-chat" style={{ position: 'sticky', top: 0, zIndex: 10, background: '#005c4b', padding: '18px 20px 8px 20px', borderBottom: '2px solid #1a2329' }}>
+                    <Button 
+                      funcionalidad={nuevoChat} 
+                      texto={<span style={{color:'#fff',fontWeight:'bold',fontSize:'18px',letterSpacing:'0.5px'}}><span style={{fontWeight:'bold',fontSize:'22px',marginRight:8}}>➕</span>Nuevo chat</span>} 
+                      className={styles.botonNuevoChat}
+                    />
+                </div>
+                <div id="usuario-logueado" style={{ textAlign: 'right', marginBottom: 10, color: '#fff' }}>
+                    <strong>Usuario:</strong> {nombreUsuario}
                 </div>
                 <div className={styles["contacts-list"]}>
                     {contacts.length > 0 ? (
@@ -256,8 +291,9 @@ export default function Home() {
                         <p>No hay contactos</p>
                     )}
                 </div>
-                <Button onClick={traerChats} text={"traer contactos"} />
+                <Button onClick={traerChats} text={"Actualizar contactos"} />
             </div>
+
             <div className={styles.main}>
                 <div id="mensajes">
                     {chatActivo ? (
@@ -265,9 +301,9 @@ export default function Home() {
                             <ul className={styles.mensajesLista}>
                                 {mensajes.map((msg, i) => (
                                     <li key={i}
-                            className={msg.id_usuario === Number(idLogged) ? styles.mensajeDerecha : styles.mensajeIzquierda}>
-                            <strong>{msg.nombre}:</strong> {msg.mensaje}
-                        </li>
+                                        className={msg.id_usuario === Number(idLogged) ? styles.mensajeDerecha : styles.mensajeIzquierda}>
+                                        <strong>{msg.nombre}:</strong> {msg.mensaje}
+                                    </li>
                                 ))}
                             </ul>
                         ) : (

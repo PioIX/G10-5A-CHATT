@@ -165,7 +165,8 @@ export default function Home() {
                 abrirChat(chatExistente.id_chat, contacto.nombre);
                 return;
             }
-
+            console.log("idLogged", idLogged)
+            console.log("contacto", contacto.id_usuario)
             // Intentar crear el chat
             const resCrear = await fetch("http://localhost:4001/CrearChat", {
                 method: "POST",
@@ -177,7 +178,7 @@ export default function Home() {
             });
             
             const dataCrear = await resCrear.json();
-            
+            console.log(dataCrear)
             if (dataCrear.id_chat) {
                 setShowDropdown(false);
                 
@@ -373,13 +374,7 @@ export default function Home() {
                     )}
                 </div>
 
-                <div className={styles.sidebarFooter}>
-                    <Button 
-                        funcionalidad={traerChats} 
-                        texto="🔄 Actualizar"
-                        className={styles.btnActualizar}
-                    />
-                </div>
+                
             </div>
 
             {/* Área de chat */}
@@ -451,7 +446,7 @@ export default function Home() {
                 ) : (
                     <div className={styles.noChat}>
                         <div className={styles.noChatIcon}>💬</div>
-                        <h2>WhatsApp Clone</h2>
+                        <h2>WhatsApp 134</h2>
                         <p>Selecciona un chat para comenzar a conversar</p>
                     </div>
                 )}

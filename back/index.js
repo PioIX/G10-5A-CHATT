@@ -452,7 +452,8 @@ app.post('/insertarMensaje', async (req, res) => {
 // POST - Crear un nuevo chat entre dos usuarios
 app.post('/CrearChat', async function(req, res) {
     const { id_usuario1, id_usuario2 } = req.body;
-    
+    console.log("id_usuario1", id_usuario1)
+    console.log("id_usuario2", id_usuario2)
     if (!id_usuario1 || !id_usuario2) {
         return res.status(400).json({ error: "Faltan parámetros", creado: false });
     }
@@ -502,7 +503,11 @@ app.post('/CrearChat', async function(req, res) {
         // Agregar ambos usuarios al chat
         await realizarQuery(`
             INSERT INTO UsuariosPorChat (id_chat, id_usuario)
-            VALUES (${nuevoIdChat}, ${id_usuario1}), (${nuevoIdChat}, ${id_usuario2})
+            VALUES (${nuevoIdChat}, ${id_usuario1})
+        `);
+        await realizarQuery(`
+            INSERT INTO UsuariosPorChat (id_chat, id_usuario)
+            VALUES (${nuevoIdChat}, ${id_usuario2})
         `);
 
         res.json({ 

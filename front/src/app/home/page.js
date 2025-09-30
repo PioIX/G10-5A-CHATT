@@ -132,7 +132,6 @@ export default function Home() {
             });
             const data = await res.json();
             if (data.validar) {
-                // Actualizar lista de contactos por si es un chat nuevo
                 traerChats();
             } else {
                 alert("No se pudo enviar el mensaje");
@@ -156,6 +155,17 @@ export default function Home() {
 
     async function iniciarChatConContacto(contacto) {
         try {
+            // Verificar si ya existe un chat con este contacto
+            const chatExistente = contacts.find(c => 
+                c.id_usuario === contacto.id_usuario && c.es_grupo === 0
+            );
+
+            if (chatExistente) {
+                setShowDropdown(false);
+                abrirChat(chatExistente.id_chat, contacto.nombre);
+                return;
+            }
+
             // Intentar crear el chat
             const resCrear = await fetch("http://localhost:4001/CrearChat", {
                 method: "POST",
@@ -169,20 +179,15 @@ export default function Home() {
             const dataCrear = await resCrear.json();
             
             if (dataCrear.id_chat) {
-                // Cerrar modal
                 setShowDropdown(false);
                 
-                // Actualizar lista de contactos
+                // Primero abrir el chat con mensajes vacíos
+                setChatActivo(dataCrear.id_chat);
+                setChatActivoNombre(contacto.nombre);
+                setMensajes([]);
+                
+                // Luego actualizar la lista de contactos
                 await traerChats();
-                
-                // Abrir el chat (vacío o existente)
-                abrirChat(dataCrear.id_chat, contacto.nombre);
-                
-                if (dataCrear.creado) {
-                    alert(`Chat creado con ${contacto.nombre}`);
-                } else {
-                    alert(`Chat con ${contacto.nombre} abierto`);
-                }
             } else {
                 alert("No se pudo crear el chat");
             }
@@ -262,9 +267,13 @@ export default function Home() {
 
     const esGrupo = contacts.find(c => c.id_chat === chatActivo)?.es_grupo === 1;
 
+    // Filtrar contactos que ya están en chats
+    const contactosDisponibles = allContacts.filter(
+        contacto => !contacts.some(c => c.id_usuario === contacto.id_usuario && c.es_grupo === 0)
+    );
+
     return (
         <div className={styles.container}>
-
             {/* Modal Nuevo Chat */}
             {showDropdown && (
                 <div className={styles.modalOverlay} onClick={() => setShowDropdown(false)}>
@@ -279,9 +288,9 @@ export default function Home() {
                             </button>
                         </div>
                         <div className={styles.modalBody}>
-                            {allContacts.length > 0 ? (
+                            {contactosDisponibles.length > 0 ? (
                                 <ul className={styles.contactsList}>
-                                    {allContacts.map((usuario, i) => (
+                                    {contactosDisponibles.map((usuario, i) => (
                                         <li 
                                             key={i} 
                                             className={styles.contactItem}
@@ -313,39 +322,9 @@ export default function Home() {
                                 <p className={styles.noContactos}>No hay usuarios disponibles</p>
                             )}
                         </div>
-
-
-            {/* Modal de usuarios disponibles */}
-            {showDropdown && (
-                <div className={styles.modalOverlay} onClick={() => setShowDropdown(false)}>
-                    <div className={styles.modalContent} onClick={e => e.stopPropagation()} style={{maxWidth: 400}}>
-                        <div className={styles.dropdownHeader}>
-                            <strong>Usuarios disponibles</strong>
-                            <button className={styles.closeBtn} onClick={() => setShowDropdown(false)}>✕</button>
-                        </div>
-                        {allContacts.length > 0 ? (
-                            <ul className={styles.dropdownList}>
-                                {allContacts.map((usuario, i) => (
-                                    <li key={i} className={styles.dropdownItem}
-                                        onClick={() => iniciarChatConContacto(usuario)}>
-                                        <div className={styles.usuarioInfo}>
-                                            <img src={usuario.foto_perfil || '/default-avatar.png'} alt={usuario.nombre} className={styles.usuarioAvatar} />
-                                            <div>
-                                                <div className={styles.usuarioNombre}>{usuario.nombre}</div>
-                                                <div className={styles.usuarioTelefono}>{usuario.num_telefono}</div>
-                                            </div>
-                                        </div>
-                                    </li>
-                                ))}
-                            </ul>
-                        ) : (
-                            <p className={styles.noUsuarios}>No hay usuarios disponibles</p>
-                        )}
-
                     </div>
                 </div>
             )}
-
 
             {/* Sidebar */}
             <div className={styles.sidebar}>
@@ -362,30 +341,6 @@ export default function Home() {
                         texto="➕ Nuevo chat"
                         className={styles.btnNuevoChat}
                     />
-
-            {/* Modal de mensajes generales */}
-            {modal.open && (
-                <div className={styles.modalOverlay} onClick={closeModal}>
-                    <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
-                        <h2>{modal.title}</h2>
-                        <p>{modal.message}</p>
-                        <Button onClick={closeModal} text="Cerrar" />
-                    </div>
-                </div>
-            )}
-
-            <div className={styles.sidebar}>
-                {/* Botón Nuevo chat arriba a la izquierda, bien visible */}
-                <div id="nuevo-chat" style={{ position: 'sticky', top: 0, zIndex: 10, background: '#005c4b', padding: '18px 20px 8px 20px', borderBottom: '2px solid #1a2329' }}>
-                    <Button 
-                      funcionalidad={nuevoChat} 
-                      texto={<span style={{color:'#fff',fontWeight:'bold',fontSize:'18px',letterSpacing:'0.5px'}}><span style={{fontWeight:'bold',fontSize:'22px',marginRight:8}}>➕</span>Nuevo chat</span>} 
-                      className={styles.botonNuevoChat}
-                    />
-                </div>
-                <div id="usuario-logueado" style={{ textAlign: 'right', marginBottom: 10, color: '#fff' }}>
-                    <strong>Usuario:</strong> {nombreUsuario}
-
                 </div>
 
                 <div className={styles.contactsList}>
@@ -414,33 +369,7 @@ export default function Home() {
                             );
                         })
                     ) : (
-
                         <p className={styles.noContactos}>No hay contactos</p>
-
-                        <p>No hay contactos</p>
-                    )}
-                </div>
-                <Button onClick={traerChats} text={"Actualizar contactos"} />
-            </div>
-
-            <div className={styles.main}>
-                <div id="mensajes">
-                    {chatActivo ? (
-                        mensajes.length > 0 ? (
-                            <ul className={styles.mensajesLista}>
-                                {mensajes.map((msg, i) => (
-                                    <li key={i}
-                                        className={msg.id_usuario === Number(idLogged) ? styles.mensajeDerecha : styles.mensajeIzquierda}>
-                                        <strong>{msg.nombre}:</strong> {msg.mensaje}
-                                    </li>
-                                ))}
-                            </ul>
-                        ) : (
-                            <p>No hay mensajes en este chat.</p>
-                        )
-                    ) : (
-                        <p>Selecciona un chat para ver los mensajes.</p>
-
                     )}
                 </div>
 

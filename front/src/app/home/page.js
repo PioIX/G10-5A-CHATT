@@ -3,38 +3,41 @@ import { io } from "socket.io-client";
 import Contact from "@/components/Contact"
 import Input from "@/components/Input"
 import Button from "@/components/Button"
-import Mensaje from "@/components/Mensaje"
 import styles from "./page.module.css"
-import { use, useEffect, useState } from "react"
+import { useEffect, useState, useRef } from "react"
 
 export default function Home() {
     const [idLogged, setIdLogged] = useState(-1);
     const [nombreUsuario, setNombreUsuario] = useState("");
-    const [mandar, setMandar] = useState(0);
-    const [src, setSrc] = useState(0);
-    const [contact, setContact] = useState(0);
     const [contacts, setContacts] = useState([]);
     const [mensajes, setMensajes] = useState([]);
-    const [mensajeNuevo, setMensajeNuevo] = useState([]);
+    const [mensajeNuevo, setMensajeNuevo] = useState("");
     const [chatActivo, setChatActivo] = useState(null);
+    const [chatActivoNombre, setChatActivoNombre] = useState("");
     const [showDropdown, setShowDropdown] = useState(false);
     const [allContacts, setAllContacts] = useState([]);
-    const [chatSeleccionadoId, setChatSeleccionadoId] = useState(null);
     const [socket, setSocket] = useState(null);
-    const [modal, setModal] = useState({ open: false, title: "", message: "" });
-    //const [idUsuarioActual, setIdUsuarioActual] = useState(-1); // ID del usuario actual
+    const [isConnected, setIsConnected] = useState(false);
+    const mensajesEndRef = useRef(null);
+
+    // Auto-scroll a nuevos mensajes
+    useEffect(() => {
+        mensajesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }, [mensajes]);
 
     useEffect(() => {
         const id = localStorage.getItem("idLogged");
+        const telefono = localStorage.getItem("num_telefono");
         setIdLogged(id);
-        fetch(`http://localhost:4001/Usuarios?num_telefono=${localStorage.getItem("num_telefono")}`)
+        
+        fetch(`http://localhost:4001/Usuarios?num_telefono=${telefono}`)
             .then(res => res.json())
             .then(data => {
                 if (data.usuarios && data.usuarios.length > 0) {
                     setNombreUsuario(data.usuarios[0].nombre);
                 }
             });
-        // Traer todos los contactos para el desplegable
+            
         fetch('http://localhost:4001/Usuarios')
             .then(res => res.json())
             .then(data => {
@@ -44,76 +47,61 @@ export default function Home() {
             });
     }, []);
 
-    useEffect(()=>{
+    useEffect(() => {
         if (idLogged != -1) {
-            traerChats()
-        
+            traerChats();
         }
-    }, [idLogged])
-
-    useEffect(()=>{
-
-        // ejecuta cuando se modifica contacts
-        console.log("contacts modificado", contacts)
-
-
-    },[contacts])
+    }, [idLogged]);
     
-    
-    async function fecha() {
+    const formatearFecha = () => {
         const ahora = new Date();
-        // formatear la fecha: dd/mm/yyyy hh:mm:ss
-        const fechaFormateada = ahora.toLocaleString("es-AR", {
-        day: "2-digit",
-        month: "2-digit",
-        year: "numeric",
-        hour: "2-digit",
-        minute: "2-digit",
-        second: "2-digit",
+        return ahora.toLocaleTimeString("es-AR", {
+            hour: "2-digit",
+            minute: "2-digit"
         });
-        return fechaFormateada;
-  }
+    }
 
     useEffect(() => {
         const newSocket = io("http://localhost:4001");
         setSocket(newSocket);
 
+        newSocket.on('connect', () => {
+            setIsConnected(true);
+            console.log('Socket conectado');
+        });
+
+        newSocket.on('disconnect', () => {
+            setIsConnected(false);
+            console.log('Socket desconectado');
+        });
+
         return () => {
             newSocket.disconnect();
         };
-
     }, []);
  
     useEffect(() => {
-      if (!socket) return;
+        if (!socket || !idLogged) return;
    
-      socket.on("newMessage", (data) => {
-        console.log("Mensaje", data);
+        socket.on("newMessage", (data) => {
+            console.log("Mensaje recibido:", data);
+            
+            if (data.id_chat === chatActivo) {
+                setMensajes((prevMensajes) => [
+                    ...prevMensajes,
+                    {
+                        contenido: data.mensaje,
+                        nombre: data.nombre,
+                        fecha: formatearFecha(),
+                        lado: data.id_usuario === Number(idLogged) ? "derecha" : "izquierda",
+                        id_mensaje: Date.now()
+                    },
+                ]);
+            }
+        });
    
-        setMensajes((todosMensajes) => [
-          ...todosMensajes,
-          {
-            contenido: data.message.contenido,
-            nombre: data.message.nombre,
-            src: data.message.src,
-            fecha:fecha(),
-            lado: data.message.idUsuario === idLogged ? "derecha" : "izquierda",
-          },
-        ]);
-      });
-   
-     return () => { socket.off("newMessage"); };
-    }, [socket, idLogged]);
-
-   
-
-  const showModal = (title, message) => {
-    setModal({ open: true, title, message });
-  };
-
-  const closeModal = () => {
-    setModal({ ...modal, open: false });
-  };
+        return () => { socket.off("newMessage"); };
+    }, [socket, idLogged, chatActivo]);
 
     async function enviarMensaje() {
         if (!mensajeNuevo.trim() || !chatActivo || idLogged === -1) return;
@@ -122,55 +110,115 @@ export default function Home() {
             id_usuario: idLogged,
             mensaje: mensajeNuevo,
             id_chat: chatActivo,
-
         };
+
+        // Agregar mensaje local inmediatamente
+        const mensajeLocal = {
+            contenido: mensajeNuevo,
+            nombre: nombreUsuario,
+            fecha: formatearFecha(),
+            lado: "derecha",
+            id_mensaje: Date.now()
+        };
+        
+        setMensajes(prev => [...prev, mensajeLocal]);
+        setMensajeNuevo("");
 
         try {
             const res = await fetch("http://localhost:4001/insertarMensaje", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(body)
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(body)
             });
             const data = await res.json();
             if (data.validar) {
-                setMensajeNuevo(""); // Limpia el input
-                abrirChat(chatActivo); // Refresca los mensajes del chat
+                // Actualizar lista de contactos por si es un chat nuevo
+                traerChats();
             } else {
-            alert("No se pudo enviar el mensaje");
+                alert("No se pudo enviar el mensaje");
             }
         } catch (error) {
+            console.error("Error:", error);
             alert("Error al enviar el mensaje");
         }
-}
+    }
 
+    const handleKeyPress = (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            enviarMensaje();
+        }
+    };
 
     function nuevoChat() {
         setShowDropdown(!showDropdown);
     }
 
-    function iniciarChatConContacto(contacto) {
-        // Aquí podrías crear el chat en el backend si no existe, o buscarlo
-        alert(`Iniciar chat con ${contacto.nombre}`);
-        setShowDropdown(false);
+    async function iniciarChatConContacto(contacto) {
+        try {
+            // Intentar crear el chat
+            const resCrear = await fetch("http://localhost:4001/CrearChat", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    id_usuario1: idLogged,
+                    id_usuario2: contacto.id_usuario
+                })
+            });
+            
+            const dataCrear = await resCrear.json();
+            
+            if (dataCrear.id_chat) {
+                // Cerrar modal
+                setShowDropdown(false);
+                
+                // Actualizar lista de contactos
+                await traerChats();
+                
+                // Abrir el chat (vacío o existente)
+                abrirChat(dataCrear.id_chat, contacto.nombre);
+                
+                if (dataCrear.creado) {
+                    alert(`Chat creado con ${contacto.nombre}`);
+                } else {
+                    alert(`Chat con ${contacto.nombre} abierto`);
+                }
+            } else {
+                alert("No se pudo crear el chat");
+            }
+        } catch (error) {
+            console.error("Error al iniciar chat:", error);
+            alert("Hubo un problema al crear el chat");
+        }
     }
 
-
-    //HACER!!!!!!!!!!!!!!!!!!!!!!!!!
-    function abrirChat(id_chat) {
+    function abrirChat(id_chat, nombre) {
         console.log("Abriendo chat con id:", id_chat);
         setChatActivo(id_chat);
-        setChatSeleccionadoId(id_chat); // Esto disparará el useEffect para traer los mensajes
+        setChatActivoNombre(nombre);
         fetch(`http://localhost:4001/MensajesChat?id_chat=${id_chat}&id_usuario=${idLogged}`)
             .then(res => res.json())
             .then(data => {
-                // Filtrar solo los mensajes donde el usuario logueado participa
                 if (data.mensajes) {
-                    const mensajesNoDuplicados = Array.from(new Map(data.mensajes.map(m => [m.id_mensaje, m])).values());
-                    console.log(data.mensajes)
-                    setMensajes(mensajesNoDuplicados);
+                    const mensajesFormateados = data.mensajes.map(m => ({
+                        id_mensaje: m.id_mensaje,
+                        contenido: m.mensaje,
+                        nombre: m.nombre,
+                        fecha: new Date(m.hora_de_envio).toLocaleTimeString('es-AR', {
+                            hour: '2-digit',
+                            minute: '2-digit'
+                        }),
+                        lado: m.id_usuario === Number(idLogged) ? "derecha" : "izquierda",
+                        id_usuario: m.id_usuario
+                    }));
+                    setMensajes(mensajesFormateados);
                 } else {
                     setMensajes([]);
                 }
+            })
+            .catch(error => {
+                console.error("Error al cargar mensajes:", error);
+                setMensajes([]);
             });
     }
 
@@ -185,11 +233,11 @@ export default function Home() {
         .then(response => response.json())
         .then(response => {
             if (response && response.contactos) {
-                console.log(response)
+                console.log(response);
                 const contactosPlanos = response.contactos.flat();
-                // Filtrar duplicados de grupos por nombre_grupo
                 const contactosUnicos = [];
                 const gruposVistos = new Set();
+                
                 contactosPlanos.forEach(contacto => {
                     if (contacto.es_grupo === 1) {
                         if (!gruposVistos.has(contacto.nombre_grupo)) {
@@ -200,51 +248,109 @@ export default function Home() {
                         contactosUnicos.push(contacto);
                     }
                 });
+                
                 const contactosSinYo = contactosUnicos.filter(
                     contacto => contacto.es_grupo === 1 || contacto.id_usuario !== Number(idLogged)
                 );
                 setContacts(contactosSinYo);
-            } else {
-                alert("Número de teléfono o contraseña incorrectos");
             }
         })
+        .catch(error => {
+            console.error("Error al traer chats:", error);
+        });
     }
 
-
-
-
-    async function traerMensajes (){
-        
-    }
+    const esGrupo = contacts.find(c => c.id_chat === chatActivo)?.es_grupo === 1;
 
     return (
         <div className={styles.container}>
-            <div className={styles.sidebar}>
-                <div id="usuario-logueado" style={{textAlign: 'right', marginBottom: 10}}>
-                    <strong>Usuario:</strong> {nombreUsuario}
-                </div>
-                <div id="nuevo-chat">
-                    <Button onClick={nuevoChat} text={"Nuevo chat"} />
-                    {showDropdown && (
-                        <div style={{background: '#fff', border: '1px solid #ccc', maxHeight: 200, overflowY: 'auto', position: 'absolute', zIndex: 10}}>
-                            <ul style={{listStyle: 'none', margin: 0, padding: 0}}>
-                                {allContacts.map((c, i) => (
-                                    <li key={i} style={{padding: 8, cursor: 'pointer'}} onClick={() => iniciarChatConContacto(c)}>
-                                        {c.nombre}
-                                    </li>
-                                ))}
-                            </ul>
+            {/* Modal Nuevo Chat */}
+            {showDropdown && (
+                <div className={styles.modalOverlay} onClick={() => setShowDropdown(false)}>
+                    <div className={styles.modalContent} onClick={e => e.stopPropagation()}>
+                        <div className={styles.modalHeader}>
+                            <h3>Nuevo chat</h3>
+                            <button 
+                                className={styles.closeBtn} 
+                                onClick={() => setShowDropdown(false)}
+                            >
+                                ×
+                            </button>
                         </div>
-                    )}
+                        <div className={styles.modalBody}>
+                            {allContacts.length > 0 ? (
+                                <ul className={styles.contactsList}>
+                                    {allContacts.map((usuario, i) => (
+                                        <li 
+                                            key={i} 
+                                            className={styles.contactItem}
+                                            onClick={() => iniciarChatConContacto(usuario)}
+                                        >
+                                            {usuario.foto_perfil ? (
+                                                <img 
+                                                    src={usuario.foto_perfil} 
+                                                    alt={usuario.nombre}
+                                                    className={styles.contactAvatar}
+                                                />
+                                            ) : (
+                                                <div className={styles.contactAvatar}>
+                                                    {usuario.nombre[0].toUpperCase()}
+                                                </div>
+                                            )}
+                                            <div className={styles.contactInfo}>
+                                                <div className={styles.contactNombre}>
+                                                    {usuario.nombre}
+                                                </div>
+                                                <div className={styles.contactTelefono}>
+                                                    {usuario.num_telefono}
+                                                </div>
+                                            </div>
+                                        </li>
+                                    ))}
+                                </ul>
+                            ) : (
+                                <p className={styles.noContactos}>No hay usuarios disponibles</p>
+                            )}
+                        </div>
+                    </div>
                 </div>
-                <div className={styles["contacts-list"]}>
+            )}
+
+            {/* Sidebar */}
+            <div className={styles.sidebar}>
+                <div className={styles.sidebarHeader}>
+                    <div className={styles.userInfo}>
+                        <h2>Chats</h2>
+                        <div className={styles.userStatus}>
+                            {isConnected && <span className={styles.statusDot}></span>}
+                            <span className={styles.userName}>{nombreUsuario}</span>
+                        </div>
+                    </div>
+                    <Button 
+                        funcionalidad={nuevoChat} 
+                        texto="➕ Nuevo chat"
+                        className={styles.btnNuevoChat}
+                    />
+                </div>
+
+                <div className={styles.contactsList}>
                     {contacts.length > 0 ? (
                         contacts.map((contact, index) => {
-                            const nombreMostrar = contact.es_grupo === 1 ? contact.nombre_grupo : contact.nombre;
+                            const nombreMostrar = contact.es_grupo === 1 
+                                ? contact.nombre_grupo 
+                                : contact.nombre;
+                            const fotoMostrar = contact.es_grupo === 1 
+                                ? '/group-default.png' 
+                                : (contact.foto_perfil || '/default-avatar.png');
+                            
                             return (
-                                <div key={index} onClick={() => abrirChat(contact.id_chat)}>
+                                <div 
+                                    key={index} 
+                                    onClick={() => abrirChat(contact.id_chat, nombreMostrar)}
+                                    className={`${styles.contactItem} ${chatActivo === contact.id_chat ? styles.activeChat : ''}`}
+                                >
                                     <Contact
-                                        src={contact.foto_perfil}
+                                        src={fotoMostrar}
                                         name={nombreMostrar}
                                         online={contact.online}
                                         status={contact.estado}
@@ -253,44 +359,93 @@ export default function Home() {
                             );
                         })
                     ) : (
-                        <p>No hay contactos</p>
+                        <p className={styles.noContactos}>No hay contactos</p>
                     )}
                 </div>
-                <Button onClick={traerChats} text={"traer contactos"} />
+
+                <div className={styles.sidebarFooter}>
+                    <Button 
+                        funcionalidad={traerChats} 
+                        texto="🔄 Actualizar"
+                        className={styles.btnActualizar}
+                    />
+                </div>
             </div>
+
+            {/* Área de chat */}
             <div className={styles.main}>
-                <div id="mensajes">
-                    {chatActivo ? (
-                        mensajes.length > 0 ? (
-                            <ul className={styles.mensajesLista}>
-                                {mensajes.map((msg, i) => (
-                                    <li key={i}
-                            className={msg.id_usuario === Number(idLogged) ? styles.mensajeDerecha : styles.mensajeIzquierda}>
-                            <strong>{msg.nombre}:</strong> {msg.mensaje}
-                        </li>
-                                ))}
-                            </ul>
-                        ) : (
-                            <p>No hay mensajes en este chat.</p>
-                        )
-                    ) : (
-                        <p>Selecciona un chat para ver los mensajes.</p>
-                    )}
-                </div>
-                <div className={styles.chatInput}>
-                    <Input
-                        placeholder="Escribe tu mensaje..."
-                        value={mensajeNuevo}
-                        onChange={e => setMensajeNuevo(e.target.value)}
-                        className={styles.inputMensaje}
-                    />
-                    <Button
-                        funcionalidad={enviarMensaje}
-                        texto="Enviar"
-                        className={styles.botonEnviar}
-                    />
-                </div>
+                {chatActivo ? (
+                    <>
+                        {/* Header del chat */}
+                        <div className={styles.chatHeader}>
+                            <div className={styles.chatHeaderAvatar}>
+                                {chatActivoNombre[0]?.toUpperCase()}
+                            </div>
+                            <div className={styles.chatHeaderInfo}>
+                                <h3>{chatActivoNombre}</h3>
+                                <span>
+                                    {contacts.find(c => c.id_chat === chatActivo)?.online 
+                                        ? 'En línea' 
+                                        : 'Desconectado'}
+                                </span>
+                            </div>
+                        </div>
+
+                        {/* Mensajes */}
+                        <div className={styles.mensajesArea}>
+                            {mensajes.length > 0 ? (
+                                <ul className={styles.mensajesLista}>
+                                    {mensajes.map((msg, i) => (
+                                        <li 
+                                            key={i}
+                                            className={msg.lado === "derecha" 
+                                                ? styles.mensajeDerecha 
+                                                : styles.mensajeIzquierda}
+                                        >
+                                            {esGrupo && msg.lado === "izquierda" && (
+                                                <strong className={styles.nombreMensaje}>
+                                                    {msg.nombre}:
+                                                </strong>
+                                            )}
+                                            <div className={styles.contenidoMensaje}>
+                                                {msg.contenido}
+                                            </div>
+                                            <div className={styles.horaMensaje}>
+                                                {msg.fecha}
+                                            </div>
+                                        </li>
+                                    ))}
+                                    <div ref={mensajesEndRef} />
+                                </ul>
+                            ) : (
+                                <p className={styles.noMensajes}>No hay mensajes. ¡Envía el primero!</p>
+                            )}
+                        </div>
+
+                        {/* Input de mensaje */}
+                        <div className={styles.chatInput}>
+                            <Input
+                                placeholder="Escribe un mensaje..."
+                                value={mensajeNuevo}
+                                onChange={(e) => setMensajeNuevo(e.target.value)}
+                                onKeyPress={handleKeyPress}
+                                className={styles.inputMensaje}
+                            />
+                            <Button
+                                funcionalidad={enviarMensaje}
+                                texto="Enviar"
+                                className={styles.botonEnviar}
+                            />
+                        </div>
+                    </>
+                ) : (
+                    <div className={styles.noChat}>
+                        <div className={styles.noChatIcon}>💬</div>
+                        <h2>WhatsApp Clone</h2>
+                        <p>Selecciona un chat para comenzar a conversar</p>
+                    </div>
+                )}
             </div>
         </div>
-    )
+    );
 }

@@ -89,9 +89,9 @@ export default function Home() {
    
       socket.on("newMessage", (data) => {
         console.log("Mensaje", data);
-   
-        setMensajes((todosMensajes) => [
-          ...todosMensajes,
+        if (data.room === chatActivo) {
+          setMensajes((prev) => [
+          ...prev,
           {
             contenido: data.message.contenido,
             nombre: data.message.nombre,
@@ -99,10 +99,12 @@ export default function Home() {
             fecha:fecha(),
             lado: data.message.idUsuario === idLogged ? "derecha" : "izquierda",
           },
-        ]);
+        ]);  
+        }
+        
       });
    
-     return () => { socket.off("newMessage"); };
+        return () => { socket.off("newMessage"); };
     }, [socket, idLogged]);
 
    
@@ -133,8 +135,14 @@ export default function Home() {
             });
             const data = await res.json();
             if (data.validar) {
+                socket.emit("sendMessage", {
+                    contenido: mensajeNuevo,
+                    idUsuario: idLogged,
+                    id_chat: chatActivo,
+                    nombre: nombreUsuario,
+                })
                 setMensajeNuevo(""); // Limpia el input
-                abrirChat(chatActivo); // Refresca los mensajes del chat
+                //abrirChat(chatActivo);
             } else {
             alert("No se pudo enviar el mensaje");
             }
@@ -159,7 +167,11 @@ export default function Home() {
     function abrirChat(id_chat) {
         console.log("Abriendo chat con id:", id_chat);
         setChatActivo(id_chat);
-        setChatSeleccionadoId(id_chat); // Esto disparará el useEffect para traer los mensajes
+        setChatSeleccionadoId(id_chat); 
+        if (socket) {
+            socket.emit("joinRoom", { room: id_chat });
+        }
+
         fetch(`http://localhost:4001/MensajesChat?id_chat=${id_chat}&id_usuario=${idLogged}`)
             .then(res => res.json())
             .then(data => {

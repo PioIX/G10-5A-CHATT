@@ -3,10 +3,11 @@
 export default function Button(props){
     return (
         <button 
-          onClick={props.funcionalidad} 
+          onClick={props.funcionalidad || props.onClick} 
           className={props.className}
+          style={props.style}
         >
-          {props.texto}
+          {props.texto || props.text || props.children}
         </button>
     )
 }

@@ -447,7 +447,75 @@ app.post('/insertarMensaje', async (req, res) => {
 
 
 
+// Agregar este endpoint DESPUÉS del POST /Chats y ANTES del POST /insertarMensaje
 
+// POST - Crear un nuevo chat entre dos usuarios
+app.post('/CrearChat', async function(req, res) {
+    const { id_usuario1, id_usuario2 } = req.body;
+    
+    if (!id_usuario1 || !id_usuario2) {
+        return res.status(400).json({ error: "Faltan parámetros", creado: false });
+    }
+
+    try {
+        // Verificar si ya existe un chat entre estos dos usuarios
+        const chatsUsuario1 = await realizarQuery(`
+            SELECT id_chat FROM UsuariosPorChat WHERE id_usuario = ${id_usuario1}
+        `);
+        
+        const chatsUsuario2 = await realizarQuery(`
+            SELECT id_chat FROM UsuariosPorChat WHERE id_usuario = ${id_usuario2}
+        `);
+
+        // Buscar chat en común (solo chats privados, no grupos)
+        for (let chat1 of chatsUsuario1) {
+            for (let chat2 of chatsUsuario2) {
+                if (chat1.id_chat === chat2.id_chat) {
+                    // Verificar que no sea un grupo
+                    const chatInfo = await realizarQuery(`
+                        SELECT es_grupo FROM Chats WHERE id_chat = ${chat1.id_chat}
+                    `);
+                    
+                    if (chatInfo[0].es_grupo === 0) {
+                        return res.json({ 
+                            message: "El chat ya existe", 
+                            creado: false,
+                            id_chat: chat1.id_chat 
+                        });
+                    }
+                }
+            }
+        }
+
+        // Crear nuevo chat
+        const chatsExistentes = await realizarQuery(`SELECT id_chat FROM Chats`);
+        let nuevoIdChat = 1;
+        if (chatsExistentes.length > 0) {
+            nuevoIdChat = Math.max(...chatsExistentes.map(c => c.id_chat)) + 1;
+        }
+
+        await realizarQuery(`
+            INSERT INTO Chats (id_chat, es_grupo, nombre_grupo)
+            VALUES (${nuevoIdChat}, 0, NULL)
+        `);
+
+        // Agregar ambos usuarios al chat
+        await realizarQuery(`
+            INSERT INTO UsuariosPorChat (id_chat, id_usuario)
+            VALUES (${nuevoIdChat}, ${id_usuario1}), (${nuevoIdChat}, ${id_usuario2})
+        `);
+
+        res.json({ 
+            message: "Chat creado exitosamente", 
+            creado: true,
+            id_chat: nuevoIdChat 
+        });
+
+    } catch (error) {
+        console.error("Error al crear chat:", error);
+        res.status(500).json({ error: "Error interno al crear chat", creado: false });
+    }
+});
 
 
 

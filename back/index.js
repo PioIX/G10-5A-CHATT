@@ -65,8 +65,8 @@ io.on("connection", (socket) => {
 		console.log("🚀 ~ io.on ~ req.session.room:", req.session.room)
 		if (req.session.room != undefined && req.session.room.length > 0)
 			socket.leave(req.session.room);
-		req.session.room = data.room;
-		socket.join(req.session.room);
+            req.session.room = data.room;
+            socket.join(req.session.room);
 
 		io.to(req.session.room).emit('chat-messages', { user: req.session.user, room: req.session.room });
 	});

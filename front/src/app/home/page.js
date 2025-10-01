@@ -5,6 +5,7 @@ import Input from "@/components/Input"
 import Button from "@/components/Button"
 import styles from "./page.module.css"
 import { useEffect, useState, useRef } from "react"
+import { useSocket } from "@/hook/useSocket";
 
 export default function Home() {
     const [idLogged, setIdLogged] = useState(-1);
@@ -12,12 +13,12 @@ export default function Home() {
     const [contacts, setContacts] = useState([]);
     const [mensajes, setMensajes] = useState([]);
     const [mensajeNuevo, setMensajeNuevo] = useState("");
+    const [mensajeNuevoRecibido, setMensajeNuevoRecibido] = useState("");
     const [chatActivo, setChatActivo] = useState(null);
     const [chatActivoNombre, setChatActivoNombre] = useState("");
     const [showDropdown, setShowDropdown] = useState(false);
     const [allContacts, setAllContacts] = useState([]);
-    const [socket, setSocket] = useState(null);
-    const [isConnected, setIsConnected] = useState(false);
+    const {socket,isConnected} = useSocket()
     const mensajesEndRef = useRef(null);
 
     // Auto-scroll a nuevos mensajes
@@ -67,52 +68,39 @@ export default function Home() {
 
         if (!socket) return;
 
-        const newSocket = io("http://localhost:4001");
-        setSocket(newSocket);
-
-        newSocket.on('connect', () => {
-            setIsConnected(true);
+        socket.on('connect', () => {
+            
             console.log('Socket conectado');
         });
 
-        newSocket.on('disconnect', () => {
-            setIsConnected(false);
+        socket.on('disconnect', () => {
+            
             console.log('Socket desconectado');
         });
         socket.on("newMessage", (data) => {
-            console.log("Mensaje recibido:", data);
+            console.log("Mensaje recibido:", data, " Chat activo: ", chatActivo);
 
-            if (parseInt(data.room) === parseInt(chatActivo)) {
-                const mensajeNuevo = {
-                        contenido: data.mensaje,
-                        nombre: data.nombre,
-                        fecha: formatearFecha(),
-                        lado: data.id_usuario === Number(idLogged) ? "derecha" : "izquierda",
-                        id_mensaje: Date.now()
-                    }; 
-                setMensajes(prev => [...prev, mensajeNuevo]);
-
-                }
+            const mensajeRecibido = {
+                    contenido: data.message.mensaje.contenido,
+                    nombre: data.message.mensaje.nombre,
+                    fecha: formatearFecha(),
+                    lado: data.message.mensaje.id_usuario == Number(idLogged) ? "derecha" : "izquierda",
+                    id_mensaje: Date.now()
+                }; 
+            setMensajes(prev => [...prev, mensajeRecibido]);
+                console.log("Mensaje recibido: " , mensajeRecibido)
+        
             console.log("Mensajes:", mensajes);
 
         });	
 
-        return () => {
-            newSocket.disconnect();
-        };
     }, [socket]);
  
     
 
     async function enviarMensaje() {
         if (!mensajeNuevo.trim() || !chatActivo || idLogged === -1) return;
-        if (socket) {
-            console.log("Enviando mensaje:", mensajeNuevo);
-            socket.emit("sendMessage", {
-                room: chatActivo,
-                mensaje: mensajeNuevo,
-                });
-        }
+       
         const body = {
             id_usuario: idLogged,
             mensaje: mensajeNuevo,
@@ -125,10 +113,19 @@ export default function Home() {
             nombre: nombreUsuario,
             fecha: formatearFecha(),
             lado: "derecha",
-            id_mensaje: Date.now()
+            id_mensaje: Date.now(),
+            id_usuario: idLogged,
         };
         
-        setMensajes(prev => [...prev, mensajeLocal]);
+         if (socket) {
+            console.log("Enviando mensaje:", mensajeLocal);
+            socket.emit("sendMessage", {
+                room: chatActivo,
+                mensaje: mensajeLocal,
+                });
+        }
+        // No hace falta agregarlo al mandarlo, porque lo voy a recibir
+       // setMensajes(prev => [...prev, mensajeLocal]);
         setMensajeNuevo("");
 
         try {

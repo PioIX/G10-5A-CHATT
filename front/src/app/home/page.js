@@ -728,6 +728,74 @@ export default function Producto({ titulo, descripcion }) {
   );
 }
 
+/*
+======================================================================
+🌟 CÓDIGO COMPLETO EXPLICADO — TODO EN UN SOLO COMENTARIO 🌟
+======================================================================
+
+======================================================================
+🔹 COMPONENTE TITLE
+======================================================================
+
+Es un h1 que recibe por props un texto.
+
+export default function Title({ text }) {
+  return (
+    <h1>{text}</h1>
+  );
+}
+
+======================================================================
+🔹 COMPONENTE DESCRIPTION
+======================================================================
+
+Es un <p> que recibe por props un texto.
+
+export default function Description({ text }) {
+  return (
+    <p>{text}</p>
+  );
+}
+
+======================================================================
+🔹 COMPONENTE BUTTON
+======================================================================
+
+Recibe:
+ - text → texto del botón
+ - onClick → función que se ejecuta cuando lo apretás
+
+export default function Button({ text, onClick }) {
+  return (
+    <button onClick={onClick}>
+      {text}
+    </button>
+  );
+}
+
+======================================================================
+🔹 COMPONENTE COMPUESTO "Producto"
+======================================================================
+
+Usa Title, Description y Button.
+Recibe por props:
+  - titulo
+  - descripcion
+
+import Title from "./Title";
+import Description from "./Description";
+import Button from "./Button";
+
+export default function Producto({ titulo, descripcion }) {
+  return (
+    <div style={{ border: "1px solid black", padding: 10, marginBottom: 10 }}>
+      <Title text={titulo} />
+      <Description text={descripcion} />
+      <Button text="Comprar" onClick={() => alert("Comprado")} />
+    </div>
+  );
+}
+
 ======================================================================
 🔹 PAGE PRINCIPAL — usa: useState, useEffect, fetch, map, conditional rendering
 ======================================================================
@@ -809,6 +877,79 @@ export default function Page() {
       console.log("Error al crear producto:", e);
     }
   }
+
+
+  --------------------------------------------------------------------
+  RETURN → LO QUE SE VE EN PANTALLA
+  --------------------------------------------------------------------
+
+  return (
+    <div>
+
+      ---------------------------------------------------------------
+      🔹 Checkbox para activar / desactivar modo agregar
+      ---------------------------------------------------------------
+
+      <div style={{ marginBottom: 20 }}>
+        <input
+          type="checkbox"
+          checked={modoAgregar}
+          onChange={() => setModoAgregar(!modoAgregar)}
+        />
+        <label style={{ marginLeft: 8 }}>Agregar nuevo producto</label>
+      </div>
+
+
+      ---------------------------------------------------------------
+      🔹 SI modoAgregar ES FALSE → MOSTRAR LISTA
+      ---------------------------------------------------------------
+
+      {!modoAgregar && (
+        <div>
+          <h2>Lista de productos</h2>
+
+          {productos.map((prod, index) => (
+            <Producto
+              key={index}
+              titulo={prod.nombre}
+              descripcion={prod.descripcion}
+            />
+          ))}
+        </div>
+      )}
+
+
+      ---------------------------------------------------------------
+      🔹 SI modoAgregar ES TRUE → MOSTRAR FORMULARIO
+      ---------------------------------------------------------------
+
+      {modoAgregar && (
+        <div>
+          <h2>Agregar producto</h2>
+
+          <input
+            placeholder="Nombre del producto"
+            value={nombreNuevo}
+            onChange={(e) => setNombreNuevo(e.target.value)}
+          />
+
+          <br /><br />
+
+          <input
+            placeholder="Descripción"
+            value={descNueva}
+            onChange={(e) => setDescNueva(e.target.value)}
+          />
+
+          <br /><br />
+
+          <button onClick={agregarProducto}>Agregar</button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 /*
 ======================================================================
 🌟 FETCH COMPLETO — GET, POST, PUT, DELETE (con ejemplos reales)
@@ -936,3 +1077,38 @@ async function eliminarProducto() {
     });
 
     const data = await response.json();
+    console.log("Producto eliminado:", data);
+
+  } catch (error) {
+    console.log("Error en DELETE:", error);
+  }
+}
+
+======================================================================
+📌 RESUMEN DE MEMORIA PARA EL EXAMEN
+======================================================================
+
+🔹 GET  → solo URL
+fetch(url)
+
+🔹 POST → headers + body + JSON.stringify
+fetch(url, {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify(obj)
+})
+
+🔹 PUT  → igual que POST pero con method "PUT"
+
+🔹 DELETE → igual que POST pero con method "DELETE"
+
+------------------------------------------
+
+🔹 response.json()   → SIEMPRE después del await fetch
+🔹 try {} catch {}   → para evitar errores
+🔹 body SIEMPRE es JSON.stringify()
+
+======================================================================
+FIN DEL COMENTARIO COMPLETO 🌟
+======================================================================
+*/

@@ -461,3 +461,478 @@ export default function Home() {
         </div>
     );
 }
+
+/*
+======================================================================
+🌟🌟🌟 RESUMEN DEFINITIVO PARA LA PRUEBA DE REACT + BACKEND 🌟🌟🌟
+======================================================================
+
+Este comentario gigante contiene TODO lo que necesitás saber para el 
+recuperatorio: componentes, props, estados, mapas, renderizado 
+condicional, fetch, GET, POST, spread operator, useEffect, inputs, 
+conexión front-back, endpoints… TODO.
+
+======================================================================
+🔵 1. COMPONENTES EN REACT
+======================================================================
+
+✔ Un componente es una función que devuelve HTML (JSX).
+✔ Sirven para NO repetir código y separar todo en partes.
+
+Ejemplo componente básico:
+function Title({ text }) {
+  return <h1>{text}</h1>;
+}
+
+✔ Componente compuesto = usa varios componentes adentro
+
+function Producto({ nombre, descripcion, onEliminar }) {
+  return (
+    <div>
+      <Title text={nombre} />
+      <p>{descripcion}</p>
+      <button onClick={onEliminar}>Eliminar</button>
+    </div>
+  );
+}
+
+======================================================================
+🔵 2. PROPS
+======================================================================
+
+Props = datos que un componente padre le pasa a un hijo.
+
+<Producto nombre="Coca" descripcion="Bebida" />
+
+El hijo lo recibe así:
+function Producto({ nombre, descripcion }) { ... }
+
+Los props NO se pueden cambiar desde adentro del hijo.
+
+======================================================================
+🔵 3. ESTADO (useState)
+======================================================================
+
+const [valor, setValor] = useState(valorInicial)
+
+✔ useState permite que React actualice la pantalla al cambiar un valor.
+✔ Si usás let/const normales, la pantalla NO se actualiza.
+
+Ej:
+const [contador, setContador] = useState(0);
+setContador(contador + 1);
+
+NUNCA:
+contador++  // No repinta la UI
+
+======================================================================
+🔵 4. MAP (para mostrar listas)
+======================================================================
+
+Se usa para recorrer arrays y renderizar elementos:
+
+productos.map((prod) => (
+  <Producto nombre={prod.nombre} descripcion={prod.descripcion} />
+))
+
+✔ SIEMPRE va dentro del return
+✔ El array del map debe ser el del useState
+✔ El parámetro del map (prod) lo elegís vos
+
+======================================================================
+🔵 5. CONDITIONAL RENDERING
+======================================================================
+
+Mostrar/ocultar cosas según un estado.
+
+Ej con &&:
+{mostrar && <p>Hola</p>}
+
+Ej con ternario:
+{checked ? <Componente /> : <Otro />}
+
+Caso típico:
+{!modoAgregar && <ListaProductos />}
+{modoAgregar && <InputsParaAgregar />}
+
+======================================================================
+🔵 6. FETCH – CONEXIÓN FRONT ↔ BACK
+======================================================================
+
+✔ fetch sirve para hacer pedidos a un servidor (backend)
+
+----------------
+➡ GET (PEDIR DATOS)
+----------------
+useEffect(() => {
+  async function traer() {
+    const res = await fetch("http://localhost:4000/productos");
+    const data = await res.json();
+    setProductos(data.productos);
+  }
+  traer();
+}, []);
+
+✔ GET no lleva body
+✔ Siempre usá response.json()
+
+----------------
+➡ POST (ENVIAR DATOS)
+----------------
+async function crearProducto() {
+  const datos = {
+    nombre: nombreNuevo,
+    descripcion: descNueva
+  };
+
+  const res = await fetch("http://localhost:4000/crearProducto", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(datos)
+  });
+
+  const data = await res.json();
+}
+
+✔ POST lleva:
+  - method
+  - headers
+  - JSON.stringify(datos)
+
+======================================================================
+🔵 7. SPREAD OPERATOR (...)
+======================================================================
+
+Sirve para copiar arrays/objetos sin romperlos.
+React necesita COPIAS nuevas, no cosas modificadas.
+
+Agregar un producto a la lista:
+setProductos([...productos, nuevoProd]);
+
+❌ productos.push(nuevoProd) → NO funciona en React
+
+======================================================================
+🔵 8. useEffect
+======================================================================
+
+useEffect(() => {
+  acciónAlCargar();
+}, []);
+
+✔ [] → significa que se ejecuta SOLO al cargar la página
+✔ Ideal para hacer GET
+
+======================================================================
+🔵 9. MANEJO DE INPUTS
+======================================================================
+
+<input value={nombre} onChange={(e) => setNombre(e.target.value)} />
+
+✔ e.target.value = valor escrito por el usuario
+✔ Siempre con useState
+
+======================================================================
+🔵 10. BACKEND (NODE + EXPRESS)
+======================================================================
+
+✔ Un endpoint es una ruta del servidor que recibe pedidos.
+
+----------------
+➡ GET /productos
+----------------
+app.get('/productos', async (req, res) => {
+  const respuesta = await realizarQuery("SELECT * FROM Productos");
+  res.json({ productos: respuesta });
+});
+
+----------------
+➡ POST /crearProducto
+----------------
+app.post('/crearProducto', async (req, res) => {
+  const { nombre, descripcion } = req.body;
+
+  await realizarQuery(`
+    INSERT INTO Productos (nombre, descripcion)
+    VALUES ("${nombre}", "${descripcion}")
+  `);
+
+  res.json({ creado: true });
+});
+
+=================================================================
+/*
+======================================================================
+🌟 CÓDIGO COMPLETO EXPLICADO — TODO EN UN SOLO COMENTARIO 🌟
+======================================================================
+
+======================================================================
+🔹 COMPONENTE TITLE
+======================================================================
+
+Es un h1 que recibe por props un texto.
+
+export default function Title({ text }) {
+  return (
+    <h1>{text}</h1>
+  );
+}
+
+======================================================================
+🔹 COMPONENTE DESCRIPTION
+======================================================================
+
+Es un <p> que recibe por props un texto.
+
+export default function Description({ text }) {
+  return (
+    <p>{text}</p>
+  );
+}
+
+======================================================================
+🔹 COMPONENTE BUTTON
+======================================================================
+
+Recibe:
+ - text → texto del botón
+ - onClick → función que se ejecuta cuando lo apretás
+
+export default function Button({ text, onClick }) {
+  return (
+    <button onClick={onClick}>
+      {text}
+    </button>
+  );
+}
+
+======================================================================
+🔹 COMPONENTE COMPUESTO "Producto"
+======================================================================
+
+Usa Title, Description y Button.
+Recibe por props:
+  - titulo
+  - descripcion
+
+import Title from "./Title";
+import Description from "./Description";
+import Button from "./Button";
+
+export default function Producto({ titulo, descripcion }) {
+  return (
+    <div style={{ border: "1px solid black", padding: 10, marginBottom: 10 }}>
+      <Title text={titulo} />
+      <Description text={descripcion} />
+      <Button text="Comprar" onClick={() => alert("Comprado")} />
+    </div>
+  );
+}
+
+======================================================================
+🔹 PAGE PRINCIPAL — usa: useState, useEffect, fetch, map, conditional rendering
+======================================================================
+
+"use client";
+import { useEffect, useState } from "react";
+import Producto from "./Producto";
+
+export default function Page() {
+
+  --------------------------------------------------------------------
+  ESTADOS
+  --------------------------------------------------------------------
+
+  ✔ Lista de productos traídos del backend
+  const [productos, setProductos] = useState([]);
+
+  ✔ Checkbox para cambiar entre ver lista / agregar producto
+  const [modoAgregar, setModoAgregar] = useState(false);
+
+  ✔ Estados de los inputs
+  const [nombreNuevo, setNombreNuevo] = useState("");
+  const [descNueva, setDescNueva] = useState("");
+
+
+  --------------------------------------------------------------------
+  FETCH GET: traer productos al cargar la página
+  --------------------------------------------------------------------
+
+  useEffect(() => {
+    async function traerProductos() {
+      try {
+        const res = await fetch("http://IP:4000/productos");  // ← GET
+        const data = await res.json();
+
+        setProductos(data.productos); // Guardamos el array
+      } catch (e) {
+        console.log("Error al traer productos:", e);
+      }
+    }
+
+    traerProductos();
+  }, []); // [] = solo se ejecuta al cargar
+
+
+  --------------------------------------------------------------------
+  FUNCIÓN PARA AGREGAR PRODUCTO — POST
+  --------------------------------------------------------------------
+
+  async function agregarProducto() {
+
+    // Objeto EXACTO que pide el backend
+    const nuevoProducto = {
+      nombre: nombreNuevo,
+      descripcion: descNueva
+    };
+
+    try {
+      const res = await fetch("http://IP:4000/crearProducto", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(nuevoProducto),
+      });
+
+      const data = await res.json();
+      console.log("Respuesta del back:", data);
+
+      // Agregamos el producto localmente a la lista
+      setProductos([...productos, nuevoProducto]);
+
+      // Limpiar inputs
+      setNombreNuevo("");
+      setDescNueva("");
+
+      // Volver a la lista
+      setModoAgregar(false);
+
+    } catch (e) {
+      console.log("Error al crear producto:", e);
+    }
+  }
+/*
+======================================================================
+🌟 FETCH COMPLETO — GET, POST, PUT, DELETE (con ejemplos reales)
+======================================================================
+
+Este comentario gigante contiene:
+
+✔ Cómo hacer un GET  
+✔ Cómo hacer un POST  
+✔ Cómo hacer un PUT  
+✔ Cómo hacer un DELETE  
+✔ Qué body se manda en cada caso  
+✔ Qué headers usar  
+✔ Cómo manejar JSON  
+✔ Ejemplos súper claros que podés copiar para el examen  
+
+======================================================================
+🔵 1. FETCH GET — Obtener datos del backend
+======================================================================
+
+✔ El método por defecto de fetch es GET  
+✔ No lleva body  
+✔ Solo pedís datos
+
+async function traerProductos() {
+  try {
+    const response = await fetch("http://localhost:4000/productos");
+
+    const data = await response.json();
+
+    console.log("Productos traídos:", data);
+
+  } catch (error) {
+    console.log("Error en GET:", error);
+  }
+}
+
+======================================================================
+🔵 2. FETCH POST — Enviar datos para CREAR algo
+======================================================================
+
+✔ Siempre se usa method: "POST"
+✔ Siempre se manda body con JSON.stringify
+✔ Siempre se usa Content-Type: "application/json"
+
+async function crearProducto() {
+
+  const nuevoProducto = {
+    nombre: "Gaseosa",
+    descripcion: "Coca cola de vidrio"
+  };
+
+  try {
+    const response = await fetch("http://localhost:4000/crearProducto", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(nuevoProducto)
+    });
+
+    const data = await response.json();
+    console.log("Producto creado:", data);
+
+  } catch (error) {
+    console.log("Error en POST:", error);
+  }
+}
+
+======================================================================
+🔵 3. FETCH PUT — Actualizar algún dato existente
+======================================================================
+
+✔ PUT se usa para EDITAR o ACTUALIZAR
+✔ Se envía un cuerpo igual que en POST, con JSON.stringify
+✔ El backend recibe datos por req.body
+
+async function actualizarProducto() {
+
+  const productoActualizado = {
+    id: 5,                       // ID del producto a modificar
+    nombre: "Sprite 1.5L",
+    descripcion: "Botella grande"
+  };
+
+  try {
+    const response = await fetch("http://localhost:4000/actualizarProducto", {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(productoActualizado)
+    });
+
+    const data = await response.json();
+
+    console.log("Producto actualizado:", data);
+
+  } catch (error) {
+    console.log("Error en PUT:", error);
+  }
+}
+
+======================================================================
+🔵 4. FETCH DELETE — Eliminar algo del backend
+======================================================================
+
+✔ DELETE puede enviar body, según el backend  
+✔ Se usa method: "DELETE"
+✔ También se manda JSON con lo que haya que borrar
+
+async function eliminarProducto() {
+  
+  const datos = {
+    id: 5
+  };
+
+  try {
+    const response = await fetch("http://localhost:4000/eliminarProducto", {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(datos)
+    });
+
+    const data = await response.json();

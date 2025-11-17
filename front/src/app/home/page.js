@@ -936,3 +936,142 @@ async function eliminarProducto() {
     });
 
     const data = await response.json();
+
+    /*
+==================== 📌 EXPLICACIÓN COMPLETA ==================
+========================= useSearchParams =====================
+🔵 ¿Qué es useSearchParams?
+
+Es un hook de Next.js que sirve para LEER los valores que vienen en la URL después del signo "?".
+
+Ejemplo de URL:
+/subastas?username=sofi&alumnoId=7
+
+Todo lo que viene después del "?" se llama QUERY PARAMS.
+Cada parámetro tiene un "nombre" y un "valor":
+username = sofi
+alumnoId = 7
+
+useSearchParams te permite ACCEDER a esos valores dentro de la página.
+
+Ejemplo básico:
+
+const searchParams = useSearchParams();
+const username = searchParams.get("username");
+const alumnoId = searchParams.get("alumnoId");
+
+✔ Si la URL es "/subastas?username=Sofi&alumnoId=3":
+username → "Sofi"
+alumnoId → "3"
+
+🔵 ¿Para qué sirve?
+
+Sirve para PASAR datos de una página a otra SIN usar:
+- backend
+- localStorage
+- props
+- useState (aunque se puede combinar)
+
+Es super útil para recuperatorios y trabajos donde:
+- completás un formulario en /registro
+- mandás esos datos a /subastas usando la URL
+
+🔵 Cómo mandar parámetros desde otra página:
+
+Ejemplo en /registro.jsx:
+
+router.push(/subastas?username=${username}&alumnoId=${alumnoId});
+
+Esto pone los datos en la URL.
+
+🔵 Cómo leerlos en /subastas.jsx:
+
+const params = useSearchParams();
+const username = params.get("username");
+const alumnoId = params.get("alumnoId");
+
+IMPORTANTE:
+Los nombres ("username" y "alumnoId") deben ser EXACTAMENTE IGUALES a los que pusiste en la URL.
+
+🔵 ¿Necesito useState?
+
+NO siempre.
+
+Pero es RECOMENDADO guardarlos porque:
+✔ el componente se va a re-renderizar
+✔ usarás esos valores varias veces
+✔ necesitás pasarlos por props o sockets
+✔ necesitás validarlos
+
+Ejemplo recomendado:
+
+const [username] = useState(params.get("username"));
+const [alumnoId] = useState(params.get("alumnoId"));
+
+🔵 ¿Qué pasa si el parámetro NO existe?
+
+params.get("loQueSea") devolverá → null
+
+🔵 Relación con router.push
+
+Lo que vos mandás desde router.push es EXACTAMENTE lo que vas a leer con useSearchParams.
+
+Ejemplo:
+router.push("/subastas?color=rojo&size=XL");
+
+Después en /subastas:
+
+params.get("color") → "rojo"
+params.get("size") → "XL"
+
+🔵 Ejemplo COMPLETO de uso real:
+/registro.jsx
+
+function irASubasta() {
+router.push(/subastas?username=${username}&alumnoId=${alumnoId});
+}
+
+/subastas.jsx
+
+import { useSearchParams } from "next/navigation";
+import { useState } from "react";
+
+export default function SubastasPage() {
+const params = useSearchParams();
+
+const [username] = useState(params.get("username"));
+const [alumnoId] = useState(params.get("alumnoId"));
+
+return (
+<div>
+<h1>Sala de Subastas</h1>
+<p>Bienvenido: {username}</p>
+<p>Número de sala: {alumnoId}</p>
+</div>
+);
+}
+
+🔵 ¿Cuándo usar useSearchParams?
+
+✔ cuando querés recibir datos de otra página
+✔ cuando necesitás pasarlos a sockets
+✔ cuando te sirven para condicional rendering
+✔ cuando necesitás identificador de usuario
+✔ cuando querés inicializar estados con valores de URL
+
+🔵 RESUMEN RÁPIDO PARA ACORDARTE SIEMPRE
+
+useSearchParams LEE lo que está en la URL después del '?'
+
+get("nombre") te da el valor
+
+usá los mismos nombres que usaste en el router.push
+
+podés guardarlos en estados para comodidad
+
+podés usar esos valores para sockets, condicional rendering, etc.
+
+==============================================================
+==================== FIN EXPLICACIÓN =========================
+
+*/

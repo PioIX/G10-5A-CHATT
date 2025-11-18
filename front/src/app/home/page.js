@@ -1,3 +1,330 @@
+/*
+====================================================================
+=                     EXAMEN COMPLETO DAI – SUPER COMENTARIO       =
+====================================================================
+
+Este comentario contiene **TODOS LOS ARCHIVOS** del examen:
+✔ /registro/page.jsx
+✔ Subasta.js
+✔ OfertaDeSubasta.js
+✔ /subastas/page.jsx
+✔ useSocket.js
+
+Todo explicado de forma clara, simple y entendible.
+
+====================================================================
+=                        1) /registro/page.jsx                      =
+====================================================================
+
+Página donde el usuario ingresa username y alumnoId.
+Usa:
+- useState → guardar inputs
+- validate → mínimo 3 caracteres
+- router.push → navegar a /subastas
+- query string → enviar datos por URL (?username=XXX&alumnoId=YYY)
+
+--------------------------------------------------------------------
+CÓDIGO:
+--------------------------------------------------------------------
+
+"use client";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+
+export default function RegistroPage() {
+
+  // Estados de inputs:
+  const [username, setUsername] = useState("");
+  const [alumnoId, setAlumnoId] = useState("");
+
+  const router = useRouter();
+
+  function irASubastas() {
+    if (username.length < 3) {
+      alert("El nombre debe tener al menos 3 caracteres");
+      return;
+    }
+
+    // Navegamos usando parámetros de URL
+    router.push(`/subastas?username=${username}&alumnoId=${alumnoId}`);
+  }
+
+  return (
+    <div style={{ padding: 20 }}>
+      <h1>Registro</h1>
+
+      <input
+        placeholder="Tu nombre"
+        value={username}
+        onChange={(e) => setUsername(e.target.value)}
+      />
+
+      {username.length > 0 && username.length < 3 && (
+        <p style={{ color: "red" }}>El nombre debe tener mínimo 3 letras</p>
+      )}
+
+      <br /><br />
+
+      <input
+        placeholder="ID alumno"
+        type="number"
+        value={alumnoId}
+        onChange={(e) => setAlumnoId(e.target.value)}
+      />
+
+      <br /><br />
+
+      <button onClick={irASubastas}>Ir a Subastas</button>
+    </div>
+  );
+}
+
+
+====================================================================
+=                        2) Subasta.js                              =
+====================================================================
+
+Componente que muestra los datos de la subasta:
+- producto
+- precioActual
+- mejorPostor (opcional)
+
+Usa conditional rendering.
+
+--------------------------------------------------------------------
+CÓDIGO:
+--------------------------------------------------------------------
+
+export default function Subasta({ producto, precioActual, mejorPostor }) {
+  return (
+    <div style={{ border: "1px solid black", padding: 20 }}>
+      <h2>Producto: {producto}</h2>
+      <p>Precio actual: ${precioActual}</p>
+
+      {mejorPostor ? (
+        <p>Mejor postor: {mejorPostor}</p>
+      ) : (
+        <p>No existe un mejor postor.</p>
+      )}
+    </div>
+  );
+}
+
+
+====================================================================
+=                        3) OfertaDeSubasta.js                      =
+====================================================================
+
+Componente que permite ingresar una nueva oferta:
+- input
+- botón Ofertar
+Usa funciones que vienen por props.
+
+--------------------------------------------------------------------
+CÓDIGO:
+--------------------------------------------------------------------
+
+export default function OfertaDeSubasta({
+  onChangeOferta,
+  onClickRealizarOferta
+}) {
+
+  return (
+    <div style={{ marginTop: 20 }}>
+      <h3>Realizar nueva oferta</h3>
+
+      <input
+        type="number"
+        placeholder="Monto"
+        onChange={(e) => onChangeOferta(e.target.value)}
+      />
+
+      <button onClick={onClickRealizarOferta}>
+        Ofertar
+      </button>
+    </div>
+  );
+}
+
+
+====================================================================
+=                        4) /subastas/page.jsx                      =
+====================================================================
+
+Página con toda la lógica del examen:
+✔ Obtiene username + alumnoId de searchParams
+✔ Conecta socket.io con useSocket()
+✔ Botón para unirse a la sala:
+        socket.emit("join_subasta", { alumnoId })
+✔ Escucha eventos:
+        joined_OK_subasta
+        nueva_oferta
+        subasta_finalizada
+✔ Muestra el componente Subasta
+✔ Muestra componente OfertaDeSubasta
+✔ Maneja historial de ofertas
+
+--------------------------------------------------------------------
+CÓDIGO:
+--------------------------------------------------------------------
+
+"use client";
+import { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
+import useSocket from "../hooks/useSocket";
+
+import Subasta from "../components/Subasta";
+import OfertaDeSubasta from "../components/OfertaDeSubasta";
+
+export default function SubastasPage() {
+
+  // 1) Obtener parámetros desde la URL
+  const params = useSearchParams();
+  const username = params.get("username");
+  const alumnoId = params.get("alumnoId");
+
+  // 2) Conectar al socket
+  const socket = useSocket("http://10.1.5.137:4000");
+
+  // 3) ESTADOS:
+  const [subasta, setSubasta] = useState(null);
+  const [montoOferta, setMontoOferta] = useState("");
+  const [historial, setHistorial] = useState([]);
+  const [conectado, setConectado] = useState(false);
+
+  // 4) Unirse a la sala
+  function unirseSala() {
+    if (!socket) return;
+
+    socket.emit("join_subasta", { alumnoId });
+
+    setConectado(true);
+  }
+
+  // 5) Lógica de listeners
+  useEffect(() => {
+    if (!socket) return;
+
+    socket.on("joined_OK_subasta", (data) => {
+      setSubasta(data);
+    });
+
+    socket.on("nueva_oferta", (data) => {
+      setSubasta(data);
+
+      setHistorial((h) => {
+        const nuevo = [data, ...h];
+        return nuevo.slice(0, 5);
+      });
+    });
+
+    socket.on("subasta_finalizada", (data) => {
+      alert("¡La subasta ha finalizado!");
+      setSubasta(data);
+      setHistoral([]);
+      setMontoOferta("");
+    });
+
+  }, [socket]);
+
+  // 6) Emitir oferta
+  function realizarOferta() {
+    if (!socket) return;
+
+    if (Number(montoOferta) <= subasta.precioActual) {
+      alert("La oferta debe ser mayor al precio actual");
+      return;
+    }
+
+    socket.emit("realizar_oferta", {
+      usuario: username,
+      monto: Number(montoOferta),
+    });
+
+    setMontoOferta("");
+  }
+
+  // 7) RENDER
+  return (
+    <div style={{ padding: 20 }}>
+
+      <h1>Subastas</h1>
+
+      {conectado && <h3>Número de sala: {alumnoId}</h3>}
+
+      {!conectado && (
+        <button onClick={unirseSala}>Unirse a la sala de subasta</button>
+      )}
+
+      {subasta && (
+        <>
+          <Subasta
+            producto={subasta.producto}
+            precioActual={subasta.precioActual}
+            mejorPostor={subasta.mejorPostor}
+          />
+
+          <OfertaDeSubasta
+            onChangeOferta={setMontoOferta}
+            onClickRealizarOferta={realizarOferta}
+          />
+
+          <h3>Historial de ofertas</h3>
+          {historial.length === 0 ? (
+            <p>No hay ofertas.</p>
+          ) : (
+            historial.map((item, i) => (
+              <p key={i}>
+                {item.mejorPostor} ofertó ${item.precioActual}
+              </p>
+            ))
+          )}
+        </>
+      )}
+
+    </div>
+  );
+}
+
+
+
+====================================================================
+=                        5) useSocket.js                            =
+====================================================================
+
+Hook que crea la conexión con el servidor de socket.
+Devuelve el socket para usar en cualquier página.
+
+--------------------------------------------------------------------
+CÓDIGO:
+--------------------------------------------------------------------
+
+import { useEffect, useState } from "react";
+import { io } from "socket.io-client";
+
+export default function useSocket(url) {
+  const [socket, setSocket] = useState(null);
+
+  useEffect(() => {
+    const s = io(url, { transports: ["websocket"] });
+    setSocket(s);
+
+    return () => {
+      s.disconnect();
+    };
+  }, [url]);
+
+  return socket;
+}
+
+
+====================================================================
+=                           FIN DEL MEGA COMENTARIO                =
+====================================================================
+
+*/
+
+
 "use client"
 import { io } from "socket.io-client";
 import Contact from "@/components/Contact"
@@ -1251,3 +1578,4 @@ fetch(url, {
 ======================================================================
 FIN DEL COMENTARIO COMPLETO 🌟
 ======================================================================
+/*  
